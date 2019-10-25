@@ -27,25 +27,23 @@ static uint8_t  event;
 #endif
 static uint8_t event_id;
 static uint8_t index;
-    
-#if (ST_TIMER_EN > 0)
-extern void st_timer_update( void );
-#endif /* (ST_TIMER_EN > 0) */
 
 extern __FLASH ST_TASK_t st_task_list[ST_TASK_MAX];
 
 #if ( ST_EVENT_MAX == 32 )
-extern uint32_t st_task_event_list[ST_TASK_MAX];
+uint32_t st_task_event_list[ ST_TASK_MAX ];
 #elif ( ST_EVENT_MAX == 16 )
-extern uint16_t st_task_event_list[ST_TASK_MAX];
+uint16_t st_task_event_list[ ST_TASK_MAX ];
 #elif ( ST_EVENT_MAX == 8 )
-extern uint8_t  st_task_event_list[ST_TASK_MAX];
+uint8_t  st_task_event_list[ ST_TASK_MAX ];
 #else
 #error "ST_EVENT_MAX must be 8, 16 or 32"
 #endif
 
 static void st_sys_init ( void )
 {
+    memset( st_task_event_list, 0, sizeof(st_task_event_list) );
+    
 #if (ST_MEM_EN > 0)
     st_mem_init();
 #endif /* (ST_MEM_EN > 0) */
@@ -53,8 +51,6 @@ static void st_sys_init ( void )
 #if (ST_TIMER_EN > 0)
     st_timer_init();
 #endif /* (ST_TIMER_EN > 0) */
-
-    st_task_init();
 
 #if ( ST_MSG_EN > 0 )
     st_msg_init();
@@ -111,7 +107,7 @@ int main( void )
         }
     }
 
-    return 0;
+    //return 0;
 
 }
 

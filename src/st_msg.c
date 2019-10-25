@@ -150,7 +150,7 @@ void st_msg_send ( void *p_msg, uint8_t task_id )
     
     p_node->task_id = task_id;
     st_msg_list_add( p_node );
-    st_event_set( task_id, ST_TASK_EVENT_MSG );
+    st_task_event_set( task_id, ST_TASK_EVENT_MSG );
 }
 
 void st_msg_fwrd ( void *p_msg, uint8_t task_id )
@@ -161,7 +161,7 @@ void st_msg_fwrd ( void *p_msg, uint8_t task_id )
     p_node = (ST_MSG_t *)((uint8_t *)p_msg - sizeof(ST_MSG_t));
     ST_ASSERT( st_msg_list_find( p_node ) != NULL );
     p_node->task_id = task_id;
-    st_event_set( task_id, ST_TASK_EVENT_MSG );
+    st_task_event_set( task_id, ST_TASK_EVENT_MSG );
 }
 
 void *st_msg_recv ( uint8_t task_id )

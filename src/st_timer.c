@@ -228,13 +228,13 @@ st_timer_event_find( uint8_t task_id, uint8_t event_id )
 }
 #endif //(ST_TIMER_STATIC_EN == 0)
 
-extern void     st_timer_init         ( void )
+void st_timer_init( void )
 {
 #if (ST_TIMER_STATIC_EN == 0)
     p_timers_head = NULL;
     p_timers_tail = NULL;
 #else
-    st_memset( st_timer_list, 0, sizeof(st_timer_list) );
+    memset( st_timer_list, 0, sizeof(st_timer_list) );
 #endif
     time_sec = 0;
     time_ms = 0;
@@ -242,7 +242,7 @@ extern void     st_timer_init         ( void )
     st_systick = 0;
 }
 
-extern void     st_timer_update       ( void )
+void st_timer_update( void )
 {
 #if (ST_TIMER_STATIC_EN == 0)
     ST_TIMER_t *p_timer_curr;
@@ -311,7 +311,7 @@ extern void     st_timer_update       ( void )
                 st_timer_list[timer_id].timeout = ( st_timer_list[timer_id].timeout >= delta_systick ) ? (st_timer_list[timer_id].timeout - delta_systick) : 0;
                 if( st_timer_list[timer_id].timeout == 0 )
                 {
-                    st_event_set( st_timer_list[timer_id].task_id, st_timer_list[timer_id].event_id );
+                    st_task_event_set( st_timer_list[timer_id].task_id, st_timer_list[timer_id].event_id );
                 }
             }
         }
@@ -319,7 +319,7 @@ extern void     st_timer_update       ( void )
     }
 }
 
-extern void     st_timer_get_time     ( uint32_t *p_sec, uint16_t *p_ms )
+void     st_timer_get_time     ( uint32_t *p_sec, uint16_t *p_ms )
 {
     if( p_sec )
         *p_sec = time_sec;
@@ -327,13 +327,13 @@ extern void     st_timer_get_time     ( uint32_t *p_sec, uint16_t *p_ms )
         *p_ms = time_ms;
 }
 
-extern void     st_timer_set_time     ( uint32_t sec, uint16_t ms )
+void     st_timer_set_time     ( uint32_t sec, uint16_t ms )
 {
     time_sec = sec;
     time_ms = ms;
 }
 
-extern void st_timer_event_create ( uint8_t task_id, uint8_t event_id, st_timer_timeout_t timeout_ms )
+void st_timer_event_create ( uint8_t task_id, uint8_t event_id, st_timer_timeout_t timeout_ms )
 {
 #if (ST_TIMER_STATIC_EN == 0)
     ST_TIMER_t *p_timer_match;
@@ -389,7 +389,7 @@ extern void st_timer_event_create ( uint8_t task_id, uint8_t event_id, st_timer_
 
 }
 
-extern void st_timer_event_update ( uint8_t task_id, uint8_t event_id, st_timer_timeout_t timeout_ms )
+void st_timer_event_update ( uint8_t task_id, uint8_t event_id, st_timer_timeout_t timeout_ms )
 {
 #if (ST_TIMER_STATIC_EN == 0)
     ST_TIMER_t *p_timer_match;
@@ -421,7 +421,7 @@ extern void st_timer_event_update ( uint8_t task_id, uint8_t event_id, st_timer_
 
 }
 
-extern void st_timer_event_delete ( uint8_t task_id, uint8_t event_id )
+void st_timer_event_delete ( uint8_t task_id, uint8_t event_id )
 {
 #if (ST_TIMER_STATIC_EN == 0)
     ST_TIMER_t *p_timer_match;
@@ -455,12 +455,12 @@ extern void st_timer_event_delete ( uint8_t task_id, uint8_t event_id )
     }
     else
     {
-        st_event_clr( task_id, event_id );
+        st_task_event_clr( task_id, event_id );
     }
 #endif
 }
 
-extern uint32_t st_timer_event_query  ( uint8_t task_id, uint8_t event_id )
+uint32_t st_timer_event_query  ( uint8_t task_id, uint8_t event_id )
 {
 #if (ST_TIMER_STATIC_EN == 0)
     ST_TIMER_t *p_timer_match;
@@ -492,7 +492,7 @@ extern uint32_t st_timer_event_query  ( uint8_t task_id, uint8_t event_id )
     return 0;
 }
 
-extern void st_timer_systick_inc( void )
+void st_timer_systick_inc( void )
 {
     st_systick++;
 }

@@ -17,6 +17,7 @@
 #ifndef __ST_TYPEDEF_H__
 #define __ST_TYPEDEF_H__
 
+#include <stdint.h>
 /**************************** TYPEDEFs ****************************/
 typedef void ( *ST_TASK_t )( uint8_t task_id, uint8_t event_id );
 

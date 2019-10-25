@@ -18,11 +18,12 @@
 #define __ST_H__
 
 #include "st_config.h"
-#include "st_porting.h"
+#include "st_portable.h"
 #include "st_const.h"
 #include "st_typedef.h"
 #include "st_macro.h"
 #include <stdint.h>
+#include <string.h>
 
 extern void st_task_event_set( uint8_t task_id, uint8_t event_id );
 extern void st_task_event_clr( uint8_t task_id, uint8_t event_id );
@@ -82,6 +83,8 @@ extern void     st_timer_event_create ( uint8_t task_id, uint8_t event_id, st_ti
 extern void     st_timer_event_update ( uint8_t task_id, uint8_t event_id, st_timer_timeout_t timeout_ms );
 extern void     st_timer_event_delete ( uint8_t task_id, uint8_t event_id );
 extern st_timer_timeout_t st_timer_event_query  ( uint8_t task_id, uint8_t event_id );
+extern void st_timer_systick_inc( void );
+extern void st_timer_update( void );
 #endif
 
 #endif //__ST_H__

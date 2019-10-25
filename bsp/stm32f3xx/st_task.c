@@ -23,7 +23,7 @@
 /* Private functions ---------------------------------------------------------*/
 
 __FLASH ST_TASK_t st_task_list[ST_TASK_MAX] = {
-    hal_task_driver_basic,
+    NULL,
 
 #if APP_CLI_EN > 0
     app_task_cli,
@@ -31,7 +31,7 @@ __FLASH ST_TASK_t st_task_list[ST_TASK_MAX] = {
     NULL,
 #endif
 
-    app_task_main,
+    NULL,
 };
 
 
