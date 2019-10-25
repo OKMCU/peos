@@ -18,14 +18,6 @@
 
 #if (ST_MSG_EN > 0)
 
-typedef struct st_msg_t {
-    struct st_msg_t *p_node_prev;
-    struct st_msg_t *p_node_next;
-    uint16_t len;
-    uint8_t  task_id;
-    uint8_t  type;
-} ST_MSG_t;
-
 static ST_MSG_t *p_msg_list_head;
 static ST_MSG_t *p_msg_list_tail;
 
@@ -104,13 +96,13 @@ static void st_msg_list_add( ST_MSG_t *p_node_new )
 
 
 
-extern void     st_msg_init         ( void )
+void     st_msg_init         ( void )
 {
     p_msg_list_head = NULL;
     p_msg_list_tail = NULL;
 }
 
-extern void *st_msg_create ( uint16_t len )
+void *st_msg_create ( uint16_t len )
 {
     ST_MSG_t *p_node_new;
     void *p_msg;
@@ -130,7 +122,7 @@ extern void *st_msg_create ( uint16_t len )
     return p_msg;
 }
 
-extern void st_msg_delete ( void *p_msg )
+void st_msg_delete ( void *p_msg )
 {
     ST_MSG_t *p_node;
 
@@ -148,7 +140,7 @@ extern void st_msg_delete ( void *p_msg )
     st_mem_free( p_node );
 }
 
-extern void st_msg_send ( void *p_msg, uint8_t task_id )
+void st_msg_send ( void *p_msg, uint8_t task_id )
 {
     ST_MSG_t *p_node;
     
@@ -161,7 +153,7 @@ extern void st_msg_send ( void *p_msg, uint8_t task_id )
     st_event_set( task_id, ST_TASK_EVENT_MSG );
 }
 
-extern void st_msg_fwrd ( void *p_msg, uint8_t task_id )
+void st_msg_fwrd ( void *p_msg, uint8_t task_id )
 {
     ST_MSG_t *p_node;
     
@@ -172,7 +164,7 @@ extern void st_msg_fwrd ( void *p_msg, uint8_t task_id )
     st_event_set( task_id, ST_TASK_EVENT_MSG );
 }
 
-extern void *st_msg_recv ( uint8_t task_id )
+void *st_msg_recv ( uint8_t task_id )
 {
     ST_MSG_t *p_node_match;
     void *p_msg;
@@ -193,7 +185,7 @@ extern void *st_msg_recv ( uint8_t task_id )
     return p_msg;
 }
 
-extern uint16_t st_msg_len ( void *p_msg )
+uint16_t st_msg_len ( void *p_msg )
 {
     ST_MSG_t *p_node;
     
@@ -203,7 +195,7 @@ extern uint16_t st_msg_len ( void *p_msg )
     return p_node->len;
 }
 
-extern uint8_t st_msg_get_type ( void *p_msg )
+uint8_t st_msg_get_type ( void *p_msg )
 {
     ST_MSG_t *p_node;
     
@@ -213,7 +205,7 @@ extern uint8_t st_msg_get_type ( void *p_msg )
     return p_node->type;
 }
 
-extern void st_msg_set_type     ( void *p_msg, uint8_t type )
+void st_msg_set_type     ( void *p_msg, uint8_t type )
 {
     ST_MSG_t *p_node;
     
