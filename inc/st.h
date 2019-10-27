@@ -22,11 +22,11 @@
 #include "st_const.h"
 #include "st_typedef.h"
 #include "st_macro.h"
-#include <stdint.h>
-#include <string.h>
 
-extern void st_task_event_set( uint8_t task_id, uint8_t event_id );
-extern void st_task_event_clr( uint8_t task_id, uint8_t event_id );
+extern void st_task_event_set( st_uint8_t task_id, st_uint8_t event_id );
+extern void st_task_event_clr( st_uint8_t task_id, st_uint8_t event_id );
+extern st_uint8_t rt_task_id_get( void );
+
 
 #if ( ST_ASSERT_EN == 0 )
 #define ST_ASSERT(expr)                        
@@ -34,7 +34,6 @@ extern void st_task_event_clr( uint8_t task_id, uint8_t event_id );
 #define ST_ASSERT_STATEMENT(statement)
 #define ST_ASSERT_DECLARATION(declaration)
 #else
-extern void st_assert_failed(char *file, uint32_t line);
 #define ST_ASSERT(expr)                        st( if (!( expr )) st_assert_failed(__FILE__, __LINE__); )
 #define ST_ASSERT_FORCED()                     st_assert_failed(__FILE__, __LINE__)
 #define ST_ASSERT_STATEMENT(statement)         st( statement )
@@ -65,25 +64,24 @@ extern void st_assert_failed(char *file, uint32_t line);
 
 #if (ST_MSG_EN > 0)
 extern void     st_msg_init    ( void );
-extern void    *st_msg_create  ( uint16_t len );
+extern void    *st_msg_create  ( st_uint16_t len );
 extern void     st_msg_delete  ( void *p_msg );
-extern void     st_msg_send    ( void *p_msg, uint8_t task_id );
-extern void     st_msg_fwrd    ( void *p_msg, uint8_t task_id );
-extern void    *st_msg_recv    ( uint8_t task_id );
-extern uint16_t st_msg_len     ( void *p_msg );
-extern uint8_t  st_msg_get_type( void *p_msg );
-extern void     st_msg_set_type( void *p_msg, uint8_t type );
+extern void     st_msg_send    ( void *p_msg, st_uint8_t task_id );
+extern void     st_msg_fwrd    ( void *p_msg, st_uint8_t task_id );
+extern void    *st_msg_recv    ( st_uint8_t task_id );
+extern st_uint16_t st_msg_len     ( void *p_msg );
+extern st_uint8_t  st_msg_get_type( void *p_msg );
+extern void     st_msg_set_type( void *p_msg, st_uint8_t type );
 #endif
 
 #if (ST_TIMER_EN > 0)
 extern void     st_timer_init         ( void );
-extern void     st_timer_get_time     ( uint32_t *p_sec, uint16_t *p_ms );
-extern void     st_timer_set_time     ( uint32_t sec, uint16_t ms );
-extern void     st_timer_event_create ( uint8_t task_id, uint8_t event_id, st_timer_timeout_t timeout_ms );
-extern void     st_timer_event_update ( uint8_t task_id, uint8_t event_id, st_timer_timeout_t timeout_ms );
-extern void     st_timer_event_delete ( uint8_t task_id, uint8_t event_id );
-extern st_timer_timeout_t st_timer_event_query  ( uint8_t task_id, uint8_t event_id );
-extern void st_timer_systick_inc( void );
+extern void     st_timer_get_time     ( st_uint32_t *p_sec, st_uint16_t *p_ms );
+extern void     st_timer_set_time     ( st_uint32_t sec, st_uint16_t ms );
+extern void     st_timer_event_create ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms );
+extern void     st_timer_event_update ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms );
+extern void     st_timer_event_delete ( st_uint8_t task_id, st_uint8_t event_id );
+extern st_timer_timeout_t st_timer_event_query  ( st_uint8_t task_id, st_uint8_t event_id );
 extern void st_timer_update( void );
 #endif
 

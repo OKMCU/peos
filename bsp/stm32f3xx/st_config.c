@@ -13,6 +13,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "st.h"
+#include "hal.h"
+#include "components/led/led.h"
+#include "application/demo.h"
 
 /* Exported variables --------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -23,15 +26,9 @@
 /* Private functions ---------------------------------------------------------*/
 
 __FLASH ST_TASK_t st_task_list[ST_TASK_MAX] = {
-    NULL,
-
-#if APP_CLI_EN > 0
-    app_task_cli,
-#else
-    NULL,
-#endif
-
-    NULL,
+    { drivers_init, drivers_task },
+    { led_init, led_task },
+    { demo_init, demo_task },
 };
 
 

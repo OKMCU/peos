@@ -29,8 +29,8 @@ typedef struct st_timer_t {
 #else
 typedef struct st_timer_t {
     st_timer_timeout_t timeout;
-    uint8_t task_id;
-    uint8_t event_id;
+    st_uint8_t task_id;
+    st_uint8_t event_id;
 } ST_TIMER_t;
 #endif //(ST_TIMER_STATIC_EN == 0)
 
@@ -41,10 +41,10 @@ static ST_TIMER_t *p_timers_tail;
 static ST_TIMER_t st_timer_list[ST_TIMER_MAX];
 #endif //(ST_TIMER_STATIC_EN == 0)
 
-static uint32_t time_sec;
-static uint16_t time_ms;
-static uint8_t prev_systick;
-static uint8_t st_systick;
+static st_uint32_t time_sec;
+static st_uint16_t time_ms;
+static st_uint8_t prev_systick;
+st_uint8_t st_systick;
 
 #if (ST_TIMER_STATIC_EN == 0)
 #if (ST_ASSERT_EN > 0)
@@ -123,17 +123,17 @@ static void st_timer_list_add( ST_TIMER_t *p_timer_new )
 
 static void st_timer_event_kernel ( void *p_arg )
 {
-    uint16_t u16tmp;
-    uint8_t task_id;
-    uint8_t event_id;
+    st_uint16_t u16tmp;
+    st_uint8_t task_id;
+    st_uint8_t event_id;
 
-    u16tmp = (uint16_t)((uint32_t)p_arg);
+    u16tmp = (st_uint16_t)((uint32_t)p_arg);
     task_id = HI_UINT16(u16tmp);
     event_id = LO_UINT16(u16tmp);
-    st_event_set(task_id, event_id);
+    st_task_event_set(task_id, event_id);
 }
 
-static ST_TIMER_t *st_timer_event_find( uint8_t task_id, uint8_t event_id )
+static ST_TIMER_t *st_timer_event_find( st_uint8_t task_id, st_uint8_t event_id )
 {
     ST_TIMER_t *p_timer_match;
     void *p_arg;
@@ -201,16 +201,16 @@ static void st_timer_cback_delete ( void *timer_id )
 #else
 
 #if (ST_TIMER_MAX >= UINT8_MAX)
-static uint16_t
+static st_uint16_t
 #else
-static uint8_t  
+static st_uint8_t  
 #endif //(ST_TIMER_MAX >= UINT8_MAX)
-st_timer_event_find( uint8_t task_id, uint8_t event_id )
+st_timer_event_find( st_uint8_t task_id, st_uint8_t event_id )
 {
 #if (ST_TIMER_MAX >= UINT8_MAX)
-    uint16_t timer_id;
+    st_uint16_t timer_id;
 #else
-    uint8_t  timer_id;
+    st_uint8_t  timer_id;
 #endif //(ST_TIMER_MAX >= UINT8_MAX)
     for( timer_id = 0; timer_id < ST_TIMER_MAX; timer_id++ )
     {
@@ -234,7 +234,7 @@ void st_timer_init( void )
     p_timers_head = NULL;
     p_timers_tail = NULL;
 #else
-    memset( st_timer_list, 0, sizeof(st_timer_list) );
+    st_memset( st_timer_list, 0, sizeof(st_timer_list) );
 #endif
     time_sec = 0;
     time_ms = 0;
@@ -253,14 +253,14 @@ void st_timer_update( void )
     void *p_arg;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
-    uint16_t timer_id;
+    st_uint16_t timer_id;
 #else
-    uint8_t  timer_id;
+    st_uint8_t  timer_id;
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif//(ST_TIMER_STATIC_EN == 0)
 
-    uint8_t curr_systick;
-    uint8_t delta_systick;
+    st_uint8_t curr_systick;
+    st_uint8_t delta_systick;
     
     ST_ENTER_CRITICAL();
     curr_systick = st_systick;
@@ -319,7 +319,7 @@ void st_timer_update( void )
     }
 }
 
-void     st_timer_get_time     ( uint32_t *p_sec, uint16_t *p_ms )
+void     st_timer_get_time     ( st_uint32_t *p_sec, st_uint16_t *p_ms )
 {
     if( p_sec )
         *p_sec = time_sec;
@@ -327,21 +327,21 @@ void     st_timer_get_time     ( uint32_t *p_sec, uint16_t *p_ms )
         *p_ms = time_ms;
 }
 
-void     st_timer_set_time     ( uint32_t sec, uint16_t ms )
+void     st_timer_set_time     ( st_uint32_t sec, st_uint16_t ms )
 {
     time_sec = sec;
     time_ms = ms;
 }
 
-void st_timer_event_create ( uint8_t task_id, uint8_t event_id, st_timer_timeout_t timeout_ms )
+void st_timer_event_create ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms )
 {
 #if (ST_TIMER_STATIC_EN == 0)
     ST_TIMER_t *p_timer_match;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
-    uint16_t timer_id;
+    st_uint16_t timer_id;
 #else
-    uint8_t  timer_id;
+    st_uint8_t  timer_id;
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif
 
@@ -395,9 +395,9 @@ void st_timer_event_update ( uint8_t task_id, uint8_t event_id, st_timer_timeout
     ST_TIMER_t *p_timer_match;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
-    uint16_t timer_id;
+    st_uint16_t timer_id;
 #else
-    uint8_t  timer_id;
+    st_uint8_t  timer_id;
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif
 
@@ -427,9 +427,9 @@ void st_timer_event_delete ( uint8_t task_id, uint8_t event_id )
     ST_TIMER_t *p_timer_match;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
-    uint16_t timer_id;
+    st_uint16_t timer_id;
 #else
-    uint8_t  timer_id;
+    st_uint8_t  timer_id;
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif
 
@@ -445,7 +445,7 @@ void st_timer_event_delete ( uint8_t task_id, uint8_t event_id )
     }
     else
     {
-        st_event_clr( task_id, event_id );
+        st_task_event_clr( task_id, event_id );
     }
 #else
     timer_id = st_timer_event_find( task_id, event_id );
@@ -460,15 +460,15 @@ void st_timer_event_delete ( uint8_t task_id, uint8_t event_id )
 #endif
 }
 
-uint32_t st_timer_event_query  ( uint8_t task_id, uint8_t event_id )
+uint32_t st_timer_event_query  ( st_uint8_t task_id, st_uint8_t event_id )
 {
 #if (ST_TIMER_STATIC_EN == 0)
     ST_TIMER_t *p_timer_match;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
-    uint16_t timer_id;
+    st_uint16_t timer_id;
 #else
-    uint8_t  timer_id;
+    st_uint8_t  timer_id;
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif
 
@@ -490,11 +490,6 @@ uint32_t st_timer_event_query  ( uint8_t task_id, uint8_t event_id )
 #endif
     
     return 0;
-}
-
-void st_timer_systick_inc( void )
-{
-    st_systick++;
 }
 
 #endif /* (ST_TIMER_EN > 0) */

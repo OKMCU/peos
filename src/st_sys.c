@@ -17,32 +17,34 @@
 #include "st.h"
 
 #if (ST_EVENT_MAX == 32)
-static uint32_t event;
+static st_uint32_t event;
 #elif (ST_EVENT_MAX == 16)
-static uint16_t event;
+static st_uint16_t event;
 #elif (ST_EVENT_MAX == 8)
-static uint8_t  event;
+static st_uint8_t  event;
 #else
 #error "ST_EVENT_MAX must be 8, 16 or 32"
 #endif
-static uint8_t event_id;
-static uint8_t index;
+static st_uint8_t event_id;
+static st_uint8_t task_id;
 
 extern __FLASH ST_TASK_t st_task_list[ST_TASK_MAX];
 
 #if ( ST_EVENT_MAX == 32 )
-uint32_t st_task_event_list[ ST_TASK_MAX ];
+st_uint32_t st_task_event_list[ ST_TASK_MAX ];
 #elif ( ST_EVENT_MAX == 16 )
-uint16_t st_task_event_list[ ST_TASK_MAX ];
+st_uint16_t st_task_event_list[ ST_TASK_MAX ];
 #elif ( ST_EVENT_MAX == 8 )
-uint8_t  st_task_event_list[ ST_TASK_MAX ];
+st_uint8_t  st_task_event_list[ ST_TASK_MAX ];
 #else
 #error "ST_EVENT_MAX must be 8, 16 or 32"
 #endif
 
 static void st_sys_init ( void )
 {
-    memset( st_task_event_list, 0, sizeof(st_task_event_list) );
+    st_uint8_t i;
+    
+    st_memset( st_task_event_list, 0, sizeof(st_task_event_list) );
     
 #if (ST_MEM_EN > 0)
     st_mem_init();
@@ -55,6 +57,17 @@ static void st_sys_init ( void )
 #if ( ST_MSG_EN > 0 )
     st_msg_init();
 #endif /* ( ST_MSG_EN > 0 ) */
+
+    for( i = 0; i < ST_TASK_MAX; i++ )
+    {
+        if( st_task_list[i].p_task_init != NULL )
+            st_task_list[i].p_task_init();
+    }
+}
+
+st_uint8_t rt_task_id_get( void )
+{
+    return task_id;
 }
 
 int main( void )
@@ -62,12 +75,12 @@ int main( void )
     /* Disable Interrupts */
     ST_ENTER_CRITICAL();
     
+    /* Initialize mcu and peripherals */
+    st_hal_init();
+    
     /* Initialize the OS's vars */
     st_sys_init();
-    
-    /* Initialize mcu and peripherals */
-    st_hardware_init();
-    
+
     /* Enable Interrupts */
     ST_EXIT_CRITICAL();
     
@@ -78,10 +91,10 @@ int main( void )
         st_timer_update();
 #endif /* (ST_TIMER_EN > 0) */
         
-        for( index = 0; index < ST_TASK_MAX; index++ )
+        for( task_id = 0; task_id < ST_TASK_MAX; task_id++ )
         {
             ST_ENTER_CRITICAL();
-            event = st_task_event_list[index];
+            event = st_task_event_list[task_id];
             ST_EXIT_CRITICAL();
             
             if( event )
@@ -98,26 +111,25 @@ int main( void )
                 event = ~event;
                 
                 ST_ENTER_CRITICAL();
-                st_task_event_list[index] &= event;
+                st_task_event_list[task_id] &= event;
                 ST_EXIT_CRITICAL();
                 
-                st_task_list[index]( index, event_id );
+                ST_ASSERT( st_task_list[task_id].p_task_handler != NULL );
+                st_task_list[task_id].p_task_handler( event_id );
+                
                 break;
             }
+        }
+
+        if( task_id == ST_TASK_MAX )
+        {
+            st_idle_hook();
         }
     }
 
     //return 0;
 
 }
-
-/* integrity check of type sizes */
-ST_ASSERT_SIZE(  int8_t, 1);
-ST_ASSERT_SIZE( uint8_t, 1);
-ST_ASSERT_SIZE( int16_t, 2);
-ST_ASSERT_SIZE(uint16_t, 2);
-ST_ASSERT_SIZE( int32_t, 4);
-ST_ASSERT_SIZE(uint32_t, 4);
 
 
 
