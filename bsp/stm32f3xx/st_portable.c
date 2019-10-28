@@ -78,7 +78,7 @@ void st_idle_hook( void )
   * @param  None
   * @retval None
   */
-extern void SysTick_Handler(void);
+void SysTick_Handler(void);
 void SysTick_Handler(void)
 {
     extern st_uint8_t st_systick;

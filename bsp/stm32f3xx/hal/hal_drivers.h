@@ -24,8 +24,8 @@ extern "C" {
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-extern void hal_driver_init        ( void );
-extern void hal_task_driver_basic  ( uint8_t task_id, uint8_t event_id );
+void hal_driver_init        ( void );
+void hal_task_driver_basic  ( uint8_t task_id, uint8_t event_id );
 
 #ifdef __cplusplus
 }

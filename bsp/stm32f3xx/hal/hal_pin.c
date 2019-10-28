@@ -130,7 +130,7 @@ __FLASH static PIN_t pin_list[] = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* Exported function implementations -----------------------------------------*/
-extern void hal_pin_mode( st_uint8_t pin, st_uint8_t mode )
+void hal_pin_mode( st_uint8_t pin, st_uint8_t mode )
 {
 
     ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
@@ -181,7 +181,7 @@ extern void hal_pin_mode( st_uint8_t pin, st_uint8_t mode )
     }
 }
 
-extern void hal_pin_write( st_uint8_t pin, st_uint8_t value )
+void hal_pin_write( st_uint8_t pin, st_uint8_t value )
 {
     ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
     if( value )
@@ -190,13 +190,13 @@ extern void hal_pin_write( st_uint8_t pin, st_uint8_t value )
         LL_GPIO_ResetOutputPin( pin_list[pin].port, pin_list[pin].pin );
 }
 
-extern void hal_pin_toggle( st_uint8_t pin )
+void hal_pin_toggle( st_uint8_t pin )
 {
     ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
     LL_GPIO_TogglePin( pin_list[pin].port, pin_list[pin].pin );
 }
 
-extern st_uint8_t hal_pin_read( st_uint8_t pin )
+st_uint8_t hal_pin_read( st_uint8_t pin )
 {
     ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
     return (st_uint8_t)LL_GPIO_IsInputPinSet( pin_list[pin].port, pin_list[pin].pin );

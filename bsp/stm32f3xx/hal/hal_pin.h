@@ -44,10 +44,10 @@ extern "C" {
 
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-extern void hal_pin_mode( st_uint8_t pin, st_uint8_t mode );
-extern void hal_pin_write( st_uint8_t pin, st_uint8_t value );
-extern void hal_pin_toggle( st_uint8_t pin );
-extern st_uint8_t hal_pin_read( st_uint8_t pin );
+void hal_pin_mode( st_uint8_t pin, st_uint8_t mode );
+void hal_pin_write( st_uint8_t pin, st_uint8_t value );
+void hal_pin_toggle( st_uint8_t pin );
+st_uint8_t hal_pin_read( st_uint8_t pin );
 
 #ifdef __cplusplus
 }

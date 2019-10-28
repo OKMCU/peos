@@ -26,8 +26,8 @@ extern "C" {
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-extern void demo_init( void );
-extern void demo_task( uint8_t event_id );
+void demo_init( void );
+void demo_task( uint8_t event_id );
 
 #ifdef __cplusplus
 }
