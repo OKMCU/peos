@@ -17,7 +17,7 @@
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
 typedef struct st_timer_t {
     struct st_timer_t *p_timer_prev;
     struct st_timer_t *p_timer_next;
@@ -31,19 +31,19 @@ typedef struct st_timer_t {
     st_uint8_t task_id;
     st_uint8_t event_id;
 } ST_TIMER_t;
-#endif //ST_TIMER_USE_MEM_HEAP
+#endif //ST_TIMER_USE_HEAP
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
 static ST_TIMER_t *p_timers_head;
 static ST_TIMER_t *p_timers_tail;
 #else
 static ST_TIMER_t st_timer_list[ST_TIMER_MAX];
-#endif //ST_TIMER_USE_MEM_HEAP
+#endif //ST_TIMER_USE_HEAP
 
 /* Private function implementations ------------------------------------------*/
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
 #ifdef ST_ASSERT_EN
 static ST_TIMER_t *st_timer_list_find( ST_TIMER_t *p_timer )
 {
@@ -223,12 +223,12 @@ st_timer_event_find( st_uint8_t task_id, st_uint8_t event_id )
     
     return timer_id;
 }
-#endif //ST_TIMER_USE_MEM_HEAP
+#endif //ST_TIMER_USE_HEAP
 
 /* Exported function implementations -----------------------------------------*/
 void st_timer_init( void )
 {
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     p_timers_head = NULL;
     p_timers_tail = NULL;
 #else
@@ -238,7 +238,7 @@ void st_timer_init( void )
 
 void st_timer_process( st_uint8_t delta_systick )
 {
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     ST_TIMER_t *p_timer_curr;
     ST_TIMER_t *p_timer_next;
     ST_TIMER_t *p_timer_head;
@@ -251,11 +251,11 @@ void st_timer_process( st_uint8_t delta_systick )
 #else
     st_uint8_t  timer_id;
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
-#endif//ST_TIMER_USE_MEM_HEAP
+#endif//ST_TIMER_USE_HEAP
 
     if( delta_systick == 0 )    return;
 
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     if( p_timers_head )
     {
         ST_ASSERT( p_timers_tail != NULL );
@@ -297,7 +297,7 @@ void st_timer_process( st_uint8_t delta_systick )
 
 void st_timer_create ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms )
 {
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     ST_TIMER_t *p_timer_match;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
@@ -311,7 +311,7 @@ void st_timer_create ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout
     ST_ASSERT( event_id < ST_EVENT_MAX );
     ST_ASSERT( timeout_ms != 0 );
     
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     p_timer_match = st_timer_event_find( task_id, event_id );
     if( p_timer_match )
     {
@@ -353,7 +353,7 @@ void st_timer_create ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout
 
 void st_timer_update ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms )
 {
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     ST_TIMER_t *p_timer_match;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
@@ -367,7 +367,7 @@ void st_timer_update ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout
     ST_ASSERT( event_id < ST_EVENT_MAX );
     ST_ASSERT( timeout_ms != 0 );
 
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     p_timer_match = st_timer_event_find( task_id, event_id );
     if( p_timer_match )
     {
@@ -384,7 +384,7 @@ void st_timer_update ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout
 
 void st_timer_delete ( st_uint8_t task_id, st_uint8_t event_id )
 {
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     ST_TIMER_t *p_timer_match;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
@@ -397,7 +397,7 @@ void st_timer_delete ( st_uint8_t task_id, st_uint8_t event_id )
     ST_ASSERT( task_id < ST_TASK_MAX);
     ST_ASSERT( event_id < ST_EVENT_MAX );
     
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     p_timer_match = st_timer_event_find( task_id, event_id );
 
     if( p_timer_match )
@@ -423,7 +423,7 @@ void st_timer_delete ( st_uint8_t task_id, st_uint8_t event_id )
 
 st_timer_timeout_t st_timer_query  ( st_uint8_t task_id, st_uint8_t event_id )
 {
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     ST_TIMER_t *p_timer_match;
 #else
 #if (ST_TIMER_MAX >= UINT8_MAX)
@@ -436,7 +436,7 @@ st_timer_timeout_t st_timer_query  ( st_uint8_t task_id, st_uint8_t event_id )
     ST_ASSERT( task_id < ST_TASK_MAX);
     ST_ASSERT( event_id < ST_EVENT_MAX );
 
-#ifdef ST_TIMER_USE_MEM_HEAP
+#ifdef ST_TIMER_USE_HEAP
     p_timer_match = st_timer_event_find( task_id, event_id );
     if( p_timer_match )
     {
