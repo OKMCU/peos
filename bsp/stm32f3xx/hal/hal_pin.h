@@ -1,24 +1,25 @@
-/******************************************************************************
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ * 
+ ******************************************************************************/
 
- @file  
-
- @brief 
-
- Group: 
- Target Device: 
-
- ******************************************************************************
- 
-
- ******************************************************************************
- Release Name: 
- Release Date: 
- *****************************************************************************/
 #ifndef __HAL_PIN_H__
 #define __HAL_PIN_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Includes -------------------------------------------------------------------*/
 #include "hal.h"
 
+/* Exported define ------------------------------------------------------------*/
 #define HAL_PIN_MODE_OUTPUT         0x00
 #define HAL_PIN_MODE_INPUT          0x01
 #define HAL_PIN_MODE_INPUT_PU       0x02
@@ -26,7 +27,6 @@
 #define HAL_PIN_MODE_OUTPUT_OD      0x04
 #define HAL_PIN_MODE_QUASI_PU       0x05
 #define HAL_PIN_MODE_ANALOG         0x06
-
 
 #define HAL_PIN_LOW                 0
 #define HAL_PIN_HIGH                1
@@ -38,12 +38,20 @@
 #define HAL_GPIO_PORT_E             4
 #define HAL_GPIO_PORT_F             5
 
-#define HAL_PIN_GET(port, pin)      (st_int8_t)(port*16+pin)
+/* Exported typedef -----------------------------------------------------------*/
+/* Exported macro -------------------------------------------------------------*/
+#define HAL_PIN_GET(port, pin)      (st_uint8_t)(port*16+pin)
 
-extern void hal_pin_mode( st_int8_t pin, st_uint8_t mode );
-extern void hal_pin_write( st_int8_t pin, st_uint8_t value );
-extern void hal_pin_toggle( st_int8_t pin );
-extern st_uint8_t hal_pin_read( st_int8_t pin );
+/* Exported variables ---------------------------------------------------------*/
+/* Exported function prototypes -----------------------------------------------*/
+extern void hal_pin_mode( st_uint8_t pin, st_uint8_t mode );
+extern void hal_pin_write( st_uint8_t pin, st_uint8_t value );
+extern void hal_pin_toggle( st_uint8_t pin );
+extern st_uint8_t hal_pin_read( st_uint8_t pin );
 
-#endif /* __HAL_GPIO_H__ */
+#ifdef __cplusplus
+}
+#endif
 
+#endif //__HAL_PIN_H__
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

@@ -1,34 +1,32 @@
-/******************************************************************************
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ * 
+ ******************************************************************************/
 
- @file  
-
- @brief 
-
- Group: 
- Target Device: 
-
- ******************************************************************************
- 
-
- ******************************************************************************
- Release Name: 
- Release Date: 2016-06-09 06:57:09
- *****************************************************************************/
 #ifndef __ST_H__
 #define __ST_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Includes -------------------------------------------------------------------*/
 #include "st_config.h"
 #include "st_portable.h"
 #include "st_const.h"
 #include "st_typedef.h"
 #include "st_macro.h"
 
-extern void st_task_event_set( st_uint8_t task_id, st_uint8_t event_id );
-extern void st_task_event_clr( st_uint8_t task_id, st_uint8_t event_id );
-extern st_uint8_t rt_task_id_get( void );
-
-
-#if ( ST_ASSERT_EN == 0 )
+/* Exported define ------------------------------------------------------------*/
+/* Exported typedef -----------------------------------------------------------*/
+/* Exported macro -------------------------------------------------------------*/
+#ifdef ST_ASSERT_EN
 #define ST_ASSERT(expr)                        
 #define ST_ASSERT_FORCED()
 #define ST_ASSERT_STATEMENT(statement)
@@ -53,7 +51,7 @@ extern st_uint8_t rt_task_id_get( void );
  */
 #define ST_ASSERT_SIZE(x,y) typedef char x ## _assert_size_t[-1+10*(sizeof(x) == (y))]
 
-#if (ST_MEM_EN > 0)
+#ifdef ST_MEM_EN
 #include "umm_malloc/umm_malloc.h"
 #define st_mem_init()                 umm_init()
 #define st_mem_alloc(size)            umm_malloc(size)
@@ -62,28 +60,47 @@ extern st_uint8_t rt_task_id_get( void );
 #define st_mem_free(ptr)              umm_free(ptr)
 #endif
 
-#if (ST_MSG_EN > 0)
-extern void     st_msg_init    ( void );
-extern void    *st_msg_create  ( st_uint16_t len );
-extern void     st_msg_delete  ( void *p_msg );
-extern void     st_msg_send    ( void *p_msg, st_uint8_t task_id );
-extern void     st_msg_fwrd    ( void *p_msg, st_uint8_t task_id );
-extern void    *st_msg_recv    ( st_uint8_t task_id );
-extern st_uint16_t st_msg_len     ( void *p_msg );
-extern st_uint8_t  st_msg_get_type( void *p_msg );
-extern void     st_msg_set_type( void *p_msg, st_uint8_t type );
+/* Exported variables ---------------------------------------------------------*/
+/* Exported function prototypes -----------------------------------------------*/
+extern void st_task_set_event( st_uint8_t task_id, st_uint8_t event_id );
+extern void st_task_clr_event( st_uint8_t task_id, st_uint8_t event_id );
+extern st_uint8_t st_get_task_id_self( void );
+extern st_uint8_t st_get_task_id_by_handler( void(* p_task_handler)(st_uint8_t event_id) );
+#ifdef ST_TASK_NAME_EN
+extern st_uint8_t st_get_task_id_by_name( const char * p_name );
 #endif
 
-#if (ST_TIMER_EN > 0)
-extern void     st_timer_init         ( void );
-extern void     st_timer_get_time     ( st_uint32_t *p_sec, st_uint16_t *p_ms );
-extern void     st_timer_set_time     ( st_uint32_t sec, st_uint16_t ms );
-extern void     st_timer_event_create ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms );
-extern void     st_timer_event_update ( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms );
-extern void     st_timer_event_delete ( st_uint8_t task_id, st_uint8_t event_id );
-extern st_timer_timeout_t st_timer_event_query  ( st_uint8_t task_id, st_uint8_t event_id );
-extern void st_timer_update( void );
+#ifdef ST_MSG_EN
+extern void st_msg_init( void );
+extern void *st_msg_create( st_uint16_t len );
+extern void st_msg_delete( void *p_msg );
+extern void st_msg_send( void *p_msg, st_uint8_t task_id );
+extern void st_msg_fwrd( void *p_msg, st_uint8_t task_id );
+extern void *st_msg_recv( st_uint8_t task_id );
+extern st_uint16_t st_msg_len( void *p_msg );
+extern st_uint8_t st_msg_get_type( void *p_msg );
+extern void st_msg_set_type( void *p_msg, st_uint8_t type );
+#endif
+
+#ifdef ST_CLOCK_EN
+extern void st_clock_init( void );
+extern st_uint8_t st_clock_update( void );
+extern void st_clock_get( ST_CLOCK_t * clock );
+extern void st_clock_set( const ST_CLOCK_t *clock );
+#endif
+
+#ifdef ST_TIMER_EN
+extern void st_timer_init( void );
+extern void st_timer_create( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms );
+extern void st_timer_update( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms );
+extern void st_timer_delete( st_uint8_t task_id, st_uint8_t event_id );
+extern st_timer_timeout_t st_timer_query( st_uint8_t task_id, st_uint8_t event_id );
+extern void st_timer_process( st_uint8_t delta_systick );
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif //__ST_H__
-
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

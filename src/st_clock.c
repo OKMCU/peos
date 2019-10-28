@@ -11,42 +11,74 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "st.h"
-#include "hal.h"
-#include "components/led/led.h"
-#include "demo.h"
 
+#ifdef ST_CLOCK_EN
 /* Exported variables --------------------------------------------------------*/
+st_uint8_t st_systick;
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+static ST_CLOCK_t sysclock;
+static st_uint8_t prev_systick;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Exported function implementations -----------------------------------------*/
-void demo_init( void )
+void st_clock_init( void )
 {
-    st_task_set_event( TASK_ID_DEMO, DEMO_TASK_EVT_LED_BLINK_FAST );
-    //st_timer_event_create( TASK_ID_DEMO, DEMO_TASK_EVT_LED_BLINK_FAST, 10000 );
-    st_timer_create( TASK_ID_DEMO, DEMO_TASK_EVT_LED_BLINK_SLOW, 10000 );
+    sysclock.tick[0] = 0;
+    sysclock.tick[1] = 0;
+    prev_systick = 0;
+    st_systick = 0;
 }
 
-void demo_task( uint8_t event_id )
+st_uint8_t st_clock_update( void )
 {
-    switch( event_id )
+    st_uint8_t curr_systick;
+    st_uint8_t delta_systick = 0;
+    
+    ST_ENTER_CRITICAL();
+    curr_systick = st_systick;
+    ST_EXIT_CRITICAL();
+
+    if( curr_systick != prev_systick )
     {
-        case DEMO_TASK_EVT_LED_BLINK_FAST:
-            led_blink( LED_ALL, 0, 50, 300 );
-        break;
+        delta_systick = ( curr_systick > prev_systick ) ? ( curr_systick - prev_systick ) : ( UINT8_MAX - prev_systick + curr_systick );
+        prev_systick = curr_systick;
 
-        case DEMO_TASK_EVT_LED_BLINK_SLOW:
-            led_blink( LED_ALL, 0, 50, 1000 );
-        break;
-
-        default:
-            ST_ASSERT_FORCED();
-        break;
+        if( (UINT32_MAX - sysclock.tick[0]) < (st_uint32_t)delta_systick )
+            sysclock.tick[1]++;
+        sysclock.tick[0] += delta_systick;
     }
+    return delta_systick;
+}
+
+void st_clock_get     ( ST_CLOCK_t *clock )
+{
+    ST_ASSERT( clock != NULL );
+    clock->tick[0] = sysclock.tick[0];
+    clock->tick[1] = sysclock.tick[1];
+}
+
+void st_clock_set     ( const ST_CLOCK_t *clock )
+{
+    ST_ASSERT( clock != NULL );
+    sysclock.tick[0] = clock->tick[0];
+    sysclock.tick[1] = clock->tick[1];
 }
 
 /* Private function implementations ------------------------------------------*/
 
+#endif /* (ST_CLOCK_EN > 0) */
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+
+
+
+
+
+
+
+
+
+
+

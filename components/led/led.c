@@ -1,49 +1,32 @@
-/******************************************************************************
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ *
+ ******************************************************************************/
 
- @file  hal_led.c
-
- @brief This file contains the interface to the HAL LED Service.
-
- Group: 
- Target Device: 
-
- ******************************************************************************
- 
-
- ******************************************************************************
- Release Name: 
- Release Date: 
- *****************************************************************************/
-
-/***************************************************************************************************
- * INCLUDES
- ***************************************************************************************************/
-
+/* Includes ------------------------------------------------------------------*/
 #include "st.h"
 #include "hal.h"
 #include "components/led/led.h"
 
-/***************************************************************************************************
- * CONSTANTS
- ***************************************************************************************************/
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
 #define LED_MAX                                 8
 #define LED_TASK_EVT_UPDATE                     0
-/***************************************************************************************************
- * MACROS
- ***************************************************************************************************/
 
-/***************************************************************************************************
- * TYPEDEFS
- ***************************************************************************************************/
-
-/* LED control structure */
+/* Private typedef -----------------------------------------------------------*/
 typedef struct {
   st_uint8_t mode;       /* Operation mode */
   st_uint8_t left;       /* Blink cycles left */
   st_uint8_t onPct;      /* On cycle percentage */
   st_uint16_t time;      /* On/off cycle time (msec) */
   st_uint32_t next;      /* Time for next change */
-} HalLedControl_t;
+} HalLedControl_t;       /* LED control structure */
 
 typedef struct
 {
@@ -51,223 +34,21 @@ typedef struct
   st_uint8_t           sleepActive;
 } HalLedStatus_t;
 
-/***************************************************************************************************
- * GLOBAL VARIABLES
- ***************************************************************************************************/
-
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
 static st_uint8_t HalLedState;              // LED state at last set/clr/blink update
 static st_uint8_t HalSleepLedState;         // LED state at last set/clr/blink update
 static st_uint8_t preBlinkState;            // Original State before going to blink mode
-                                         // bit 0, 1, 2, 3 represent led 0, 1, 2, 3
-
+                                            // bit 0, 1, 2, 3 represent led 0, 1, 2, 3
 #if ( LED_BLINK_EN > 0 )
 static HalLedStatus_t HalLedStatusControl;
 #endif
 
-/***************************************************************************************************
- * LOCAL FUNCTIONS
- ***************************************************************************************************/
+/* Private function prototypes -----------------------------------------------*/
+static void led_on_off ( st_uint8_t leds, st_uint8_t mode );
+static void led_task_update ( void );
 
-/***************************************************************************************************
- * @fn      led_on_off
- *
- * @brief   Turns specified LED ON or OFF
- *
- * @param   leds - LED bit mask
- *          mode - LED_ON,LED_OFF,
- *
- * @return  none
- ***************************************************************************************************/
-static void led_on_off (st_uint8_t leds, st_uint8_t mode)
-{
-    if ( LED_0_PIN >= 0 )
-    {
-        if (leds & LED_0)
-        {
-            if (mode == LED_MODE_ON) hal_pin_write( LED_0_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
-            else                     hal_pin_write( LED_0_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        }
-    }
-
-    if ( LED_1_PIN >= 0 )
-    {
-        if (leds & LED_1)
-        {
-            if (mode == LED_MODE_ON) hal_pin_write( LED_1_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
-            else                     hal_pin_write( LED_1_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        }
-    }
-
-
-    if ( LED_2_PIN >= 0 )
-    {
-        if (leds & LED_2)
-        {
-            if (mode == LED_MODE_ON) hal_pin_write( LED_2_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
-            else                     hal_pin_write( LED_2_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        }
-    }
-
-    if ( LED_3_PIN >= 0 )
-    {
-        if (leds & LED_3)
-        {
-            if (mode == LED_MODE_ON) hal_pin_write( LED_3_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
-            else                     hal_pin_write( LED_3_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        }
-    }
-
-
-    if ( LED_4_PIN >= 0 )
-    {
-        if (leds & LED_4)
-        {
-            if (mode == LED_MODE_ON) hal_pin_write( LED_4_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
-            else                     hal_pin_write( LED_4_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        }
-    }
-
-    if ( LED_5_PIN >= 0 )
-    {
-        if (leds & LED_5)
-        {
-            if (mode == LED_MODE_ON) hal_pin_write( LED_5_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
-            else                     hal_pin_write( LED_5_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        }
-    }
-
-    if ( LED_6_PIN >= 0 )
-    {
-        if (leds & LED_6)
-        {
-            if (mode == LED_MODE_ON) hal_pin_write( LED_6_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
-            else                     hal_pin_write( LED_6_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        }
-    }
-
-    if ( LED_7_PIN >= 0 )
-    {
-        if (leds & LED_7)
-        {
-            if (mode == LED_MODE_ON) hal_pin_write( LED_7_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
-            else                     hal_pin_write( LED_7_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        }
-    }
-    
-    /* Remember current state */
-    if (mode)
-    {
-        HalLedState |= leds;
-    }
-    else
-    {
-        HalLedState &= (leds ^ 0xFF);
-    }
-}
-
-/***************************************************************************************************
- * @fn      led_task_update
- *
- * @brief   Update leds to work with blink
- *
- * @param   none
- *
- * @return  none
- ***************************************************************************************************/
-static void led_task_update (void)
-{
-  st_uint32_t time_sec;
-  st_uint32_t time;
-  HalLedControl_t *sts;
-  st_uint16_t next;
-  st_uint16_t wait;
-  st_uint16_t time_ms;
-  st_uint8_t led;
-  st_uint8_t pct;
-  st_uint8_t leds;
-  
-
-  next = 0;
-  led  = LED_0;
-  leds = LED_ALL;
-  sts = HalLedStatusControl.HalLedControlTable;
-
-  /* Check if sleep is active or not */
-  if (!HalLedStatusControl.sleepActive)
-  {
-    while (leds)
-    {
-      if (leds & led)
-      {
-        if (sts->mode & LED_MODE_BLINK)
-        {
-          st_timer_get_time(&time_sec, &time_ms);
-          time = time_sec*1000+time_ms;
-          if (time >= sts->next)
-          {
-            if (sts->mode & LED_MODE_ON)
-            {
-              pct = 100 - sts->onPct;                   /* Percentage of cycle for off */
-              sts->mode &= ~LED_MODE_ON;                /* Say it's not on */
-              led_on_off (led, LED_MODE_OFF);           /* Turn it off */
-
-              if ( !(sts->mode & LED_MODE_FLASH) )
-              {
-                sts->left--;                            // Not continuous, reduce count
-              }
-            }
-            else if ( !(sts->left) && !(sts->mode & LED_MODE_FLASH) )
-            {
-              sts->mode ^= LED_MODE_BLINK;              // No more blinks
-            }
-            else
-            {
-              pct = sts->onPct;                         // Percentage of cycle for on
-              sts->mode |= LED_MODE_ON;                 // Say it's on
-              led_on_off( led, LED_MODE_ON );           // Turn it on
-            }
-            if (sts->mode & LED_MODE_BLINK)
-            {
-              wait = (((st_uint32_t)pct * (st_uint32_t)sts->time) / 100);
-              sts->next = time + wait;
-            }
-            else
-            {
-              /* no more blink, no more wait */
-              wait = 0;
-              /* After blinking, set the LED back to the state before it blinks */
-              led_set (led, ((preBlinkState & led)!=0)?LED_MODE_ON:LED_MODE_OFF);
-              /* Clear the saved bit */
-              preBlinkState &= (led ^ 0xFF);
-            }
-          }
-          else
-          {
-            wait = sts->next - time;  /* Time left */
-          }
-
-          if (!next || ( wait && (wait < next) ))
-          {
-            next = wait;
-          }
-        }
-        leds ^= led;
-      }
-      led <<= 1;
-      sts++;
-    }
-
-    if (next)
-    {
-      st_timer_event_create( TASK_ID_LED, LED_TASK_EVT_UPDATE, next );/* Schedule event */
-    }
-  }
-}
-
-/***************************************************************************************************
- * FUNCTIONS - API
- ***************************************************************************************************/
-
+/* Exported function implementations -----------------------------------------*/
 /***************************************************************************************************
  * @fn      led_init
  *
@@ -279,54 +60,46 @@ static void led_task_update (void)
  ***************************************************************************************************/
 void led_init (void)
 {
-    if ( LED_0_PIN >= 0 )
-    {
-        hal_pin_write( LED_0_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        hal_pin_mode( LED_0_PIN, HAL_PIN_MODE_OUTPUT );
-    }
-    
-    if ( LED_1_PIN >= 0 )
-    {
-        hal_pin_write( LED_1_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        hal_pin_mode( LED_1_PIN, HAL_PIN_MODE_OUTPUT );
-    }
-    
-    if ( LED_2_PIN >= 0 )
-    {
-        hal_pin_write( LED_2_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        hal_pin_mode( LED_2_PIN, HAL_PIN_MODE_OUTPUT );
-    }
+#ifdef LED_0_PIN
+    hal_pin_write( LED_0_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    hal_pin_mode( LED_0_PIN, HAL_PIN_MODE_OUTPUT );
+#endif
 
-    if ( LED_3_PIN >= 0 )
-    {
-        hal_pin_write( LED_3_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        hal_pin_mode( LED_3_PIN, HAL_PIN_MODE_OUTPUT );
-    }
+#ifdef LED_1_PIN
+    hal_pin_write( LED_1_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    hal_pin_mode( LED_1_PIN, HAL_PIN_MODE_OUTPUT );
+#endif
 
-    if ( LED_4_PIN >= 0 )
-    {
-        hal_pin_write( LED_4_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        hal_pin_mode( LED_4_PIN, HAL_PIN_MODE_OUTPUT );
-    }
+#ifdef LED_2_PIN
+    hal_pin_write( LED_2_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    hal_pin_mode( LED_2_PIN, HAL_PIN_MODE_OUTPUT );
+#endif
 
-    if ( LED_5_PIN >= 0 )
-    {
-        hal_pin_write( LED_5_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        hal_pin_mode( LED_5_PIN, HAL_PIN_MODE_OUTPUT );
-    }
+#ifdef LED_3_PIN
+    hal_pin_write( LED_3_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    hal_pin_mode( LED_3_PIN, HAL_PIN_MODE_OUTPUT );
+#endif
 
-    if ( LED_6_PIN >= 0 )
-    {
-        hal_pin_write( LED_6_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        hal_pin_mode( LED_6_PIN, HAL_PIN_MODE_OUTPUT );
-    }
 
-    if ( LED_7_PIN >= 0 )
-    {
-        hal_pin_write( LED_7_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
-        hal_pin_mode( LED_7_PIN, HAL_PIN_MODE_OUTPUT );
-    }
+#ifdef LED_4_PIN
+    hal_pin_write( LED_4_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    hal_pin_mode( LED_4_PIN, HAL_PIN_MODE_OUTPUT );
+#endif
 
+#ifdef LED_5_PIN
+    hal_pin_write( LED_5_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    hal_pin_mode( LED_5_PIN, HAL_PIN_MODE_OUTPUT );
+#endif
+
+#ifdef LED_6_PIN
+    hal_pin_write( LED_6_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    hal_pin_mode( LED_6_PIN, HAL_PIN_MODE_OUTPUT );
+#endif
+
+#ifdef LED_7_PIN
+    hal_pin_write( LED_7_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    hal_pin_mode( LED_7_PIN, HAL_PIN_MODE_OUTPUT );
+#endif
 
 #if ( LED_BLINK_EN > 0 )
   HalLedStatusControl.sleepActive = FALSE;          // Initialize sleepActive to FALSE.
@@ -421,8 +194,7 @@ st_uint8_t led_set ( st_uint8_t leds, st_uint8_t mode )
 void led_blink ( st_uint8_t leds, st_uint8_t numBlinks, st_uint8_t percent, st_uint16_t period)
 {
 #if ( LED_BLINK_EN > 0 )
-  st_uint32_t time_sec;
-  st_uint16_t time_ms;
+  ST_CLOCK_t clock;
   HalLedControl_t *sts;
   st_uint8_t led;
 
@@ -447,8 +219,8 @@ void led_blink ( st_uint8_t leds, st_uint8_t numBlinks, st_uint8_t percent, st_u
           sts->onPct = percent;                             /* % of cycle LED is on */
           sts->left  = numBlinks;                           /* Number of blink cycles */
           if (!numBlinks) sts->mode |= LED_MODE_FLASH;      /* Continuous */
-          st_timer_get_time(&time_sec, &time_ms);
-          sts->next = time_sec*1000+time_ms;                /* Start now */
+          st_clock_get( &clock );
+          sts->next = clock.tick[0];                        /* Start now */
           sts->mode |= LED_MODE_BLINK;                      /* Enable blinking */
           leds ^= led;
         }
@@ -456,8 +228,8 @@ void led_blink ( st_uint8_t leds, st_uint8_t numBlinks, st_uint8_t percent, st_u
         sts++;
       }
       // Cancel any overlapping timer for blink events
-      st_timer_event_delete( TASK_ID_LED, LED_TASK_EVT_UPDATE );
-      st_task_event_set ( TASK_ID_LED, LED_TASK_EVT_UPDATE );
+      st_timer_delete( TASK_ID_LED, LED_TASK_EVT_UPDATE );
+      st_task_set_event ( TASK_ID_LED, LED_TASK_EVT_UPDATE );
     }
     else
     {
@@ -526,7 +298,7 @@ void led_exit_sleep( void )
   led_on_off(HalSleepLedState, LED_MODE_ON);
 
   /* Restart - This takes care BLINKING LEDS */
-  st_task_event_set( TASK_ID_LED, LED_TASK_EVT_UPDATE );
+  st_task_set_event( TASK_ID_LED, LED_TASK_EVT_UPDATE );
 
 #if ( LED_BLINK_EN > 0 )
   /* Sleep OFF */
@@ -534,9 +306,190 @@ void led_exit_sleep( void )
 #endif /* BLINK_LEDS */
 }
 
+/* Private function implementations ------------------------------------------*/
 /***************************************************************************************************
-***************************************************************************************************/
+ * @fn      led_on_off
+ *
+ * @brief   Turns specified LED ON or OFF
+ *
+ * @param   leds - LED bit mask
+ *          mode - LED_ON,LED_OFF,
+ *
+ * @return  none
+ ***************************************************************************************************/
+static void led_on_off (st_uint8_t leds, st_uint8_t mode)
+{
+#ifdef LED_0_PIN
+    if (leds & LED_0)
+    {
+        if (mode == LED_MODE_ON) hal_pin_write( LED_0_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
+        else                     hal_pin_write( LED_0_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    }
+#endif
 
+#ifdef LED_1_PIN
+    if (leds & LED_1)
+    {
+        if (mode == LED_MODE_ON) hal_pin_write( LED_1_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
+        else                     hal_pin_write( LED_1_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    }
+#endif
 
+#ifdef LED_2_PIN
+    if (leds & LED_2)
+    {
+        if (mode == LED_MODE_ON) hal_pin_write( LED_2_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
+        else                     hal_pin_write( LED_2_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    }
+#endif
 
+#ifdef LED_3_PIN
+    if (leds & LED_3)
+    {
+        if (mode == LED_MODE_ON) hal_pin_write( LED_3_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
+        else                     hal_pin_write( LED_3_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    }
+#endif
 
+#ifdef LED_4_PIN
+    if (leds & LED_4)
+    {
+        if (mode == LED_MODE_ON) hal_pin_write( LED_4_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
+        else                     hal_pin_write( LED_4_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    }
+#endif
+
+#ifdef LED_5_PIN
+    if (leds & LED_5)
+    {
+        if (mode == LED_MODE_ON) hal_pin_write( LED_5_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
+        else                     hal_pin_write( LED_5_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    }
+#endif
+
+#ifdef LED_6_PIN
+    if (leds & LED_6)
+    {
+        if (mode == LED_MODE_ON) hal_pin_write( LED_6_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
+        else                     hal_pin_write( LED_6_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    }
+#endif
+
+#ifdef LED_7_PIN
+    if (leds & LED_7)
+    {
+        if (mode == LED_MODE_ON) hal_pin_write( LED_7_PIN, LED_ON_POLARITY ? HAL_PIN_HIGH : HAL_PIN_LOW );
+        else                     hal_pin_write( LED_7_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
+    }
+#endif
+
+    /* Remember current state */
+    if (mode)
+    {
+        HalLedState |= leds;
+    }
+    else
+    {
+        HalLedState &= (leds ^ 0xFF);
+    }
+}
+
+/***************************************************************************************************
+ * @fn      led_task_update
+ *
+ * @brief   Update leds to work with blink
+ *
+ * @param   none
+ *
+ * @return  none
+ ***************************************************************************************************/
+static void led_task_update (void)
+{
+  ST_CLOCK_t clock;
+  st_uint32_t time;
+  HalLedControl_t *sts;
+  st_uint16_t next;
+  st_uint16_t wait;
+  st_uint8_t led;
+  st_uint8_t pct;
+  st_uint8_t leds;
+  
+
+  next = 0;
+  led  = LED_0;
+  leds = LED_ALL;
+  sts = HalLedStatusControl.HalLedControlTable;
+
+  /* Check if sleep is active or not */
+  if (!HalLedStatusControl.sleepActive)
+  {
+    while (leds)
+    {
+      if (leds & led)
+      {
+        if (sts->mode & LED_MODE_BLINK)
+        {
+          st_clock_get( &clock );
+          time = clock.tick[0];
+          if (time >= sts->next)
+          {
+            if (sts->mode & LED_MODE_ON)
+            {
+              pct = 100 - sts->onPct;                   /* Percentage of cycle for off */
+              sts->mode &= ~LED_MODE_ON;                /* Say it's not on */
+              led_on_off (led, LED_MODE_OFF);           /* Turn it off */
+
+              if ( !(sts->mode & LED_MODE_FLASH) )
+              {
+                sts->left--;                            // Not continuous, reduce count
+              }
+            }
+            else if ( !(sts->left) && !(sts->mode & LED_MODE_FLASH) )
+            {
+              sts->mode ^= LED_MODE_BLINK;              // No more blinks
+            }
+            else
+            {
+              pct = sts->onPct;                         // Percentage of cycle for on
+              sts->mode |= LED_MODE_ON;                 // Say it's on
+              led_on_off( led, LED_MODE_ON );           // Turn it on
+            }
+            if (sts->mode & LED_MODE_BLINK)
+            {
+              wait = (((st_uint32_t)pct * (st_uint32_t)sts->time) / 100);
+              sts->next = time + wait;
+            }
+            else
+            {
+              /* no more blink, no more wait */
+              wait = 0;
+              /* After blinking, set the LED back to the state before it blinks */
+              led_set (led, ((preBlinkState & led)!=0)?LED_MODE_ON:LED_MODE_OFF);
+              /* Clear the saved bit */
+              preBlinkState &= (led ^ 0xFF);
+            }
+          }
+          else
+          {
+            wait = sts->next - time;  /* Time left */
+          }
+
+          if (!next || ( wait && (wait < next) ))
+          {
+            next = wait;
+          }
+        }
+        leds ^= led;
+      }
+      led <<= 1;
+      sts++;
+    }
+
+    if (next)
+    {
+      st_timer_create( TASK_ID_LED, LED_TASK_EVT_UPDATE, next );/* Schedule event */
+    }
+  }
+}
+
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

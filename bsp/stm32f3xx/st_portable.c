@@ -1,15 +1,13 @@
-/**
-  ******************************************************************************
-  * @file    
-  * @author  
-  * @brief   
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT(c) 2019 Cloud Light Technology Ltd.</center></h2>
-  *
-  ******************************************************************************
-  */
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ *
+ ******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
 /* LL drivers common to all LL examples */
@@ -39,16 +37,16 @@
 
 #include "st.h"
 
-
 /* Exported variables --------------------------------------------------------*/
-/* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+/* Exported function implementations -----------------------------------------*/
 static void SystemClock_Config( void );
 
-#if (ST_ASSERT_EN > 0)
+#ifdef ST_ASSERT_EN
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
@@ -74,7 +72,7 @@ void st_idle_hook( void )
 }
 
 
-#if (ST_TIMER_EN > 0)
+#ifdef ST_CLOCK_EN
 /**
   * @brief  This function handles SysTick Handler.
   * @param  None
@@ -92,7 +90,7 @@ void st_hal_init( void )
 {
     SystemClock_Config();
     
- #if (ST_TIMER_EN > 0)
+ #ifdef ST_CLOCK_EN
     SysTick_Config( 64000 );
  #endif
 
@@ -105,7 +103,7 @@ void st_hal_init( void )
     LL_APB2_GRP1_EnableClock( LL_APB2_GRP1_PERIPH_SYSCFG );
 }
 
-/* Private functions ---------------------------------------------------------*/
+/* Private function implementations ------------------------------------------*/
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow : 
@@ -176,13 +174,4 @@ ST_ASSERT_SIZE(st_uint16_t, 2);
 ST_ASSERT_SIZE(st_int32_t, 4);
 ST_ASSERT_SIZE(st_uint32_t, 4);
 
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-/********** (C) COPYRIGHT 2019 Cloud Light Technology Ltd. *****END OF FILE****/
-
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

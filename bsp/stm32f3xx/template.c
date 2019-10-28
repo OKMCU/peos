@@ -11,9 +11,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "st.h"
-#include "hal.h"
-#include "components/led/led.h"
-#include "demo.h"
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -21,32 +18,29 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+static void private_function( void );
 /* Exported function implementations -----------------------------------------*/
-void demo_init( void )
-{
-    st_task_set_event( TASK_ID_DEMO, DEMO_TASK_EVT_LED_BLINK_FAST );
-    //st_timer_event_create( TASK_ID_DEMO, DEMO_TASK_EVT_LED_BLINK_FAST, 10000 );
-    st_timer_create( TASK_ID_DEMO, DEMO_TASK_EVT_LED_BLINK_SLOW, 10000 );
-}
 
-void demo_task( uint8_t event_id )
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @note   None
+  * @retval None
+  */
+void exported_function(char *file, st_uint32_t line)
 {
-    switch( event_id )
+    /* Infinite loop */
+    while (1)
     {
-        case DEMO_TASK_EVT_LED_BLINK_FAST:
-            led_blink( LED_ALL, 0, 50, 300 );
-        break;
-
-        case DEMO_TASK_EVT_LED_BLINK_SLOW:
-            led_blink( LED_ALL, 0, 50, 1000 );
-        break;
-
-        default:
-            ST_ASSERT_FORCED();
-        break;
     }
 }
 
 /* Private function implementations ------------------------------------------*/
+static void private_function( void )
+{
+    
+}
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

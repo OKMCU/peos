@@ -1,36 +1,25 @@
-/******************************************************************************
-
- @file  hal_led.h
-
- @brief This file contains the interface to the LED Service.
-
- Group: 
- Target Device: 
-
- ******************************************************************************
-
- ******************************************************************************
- Release Name: 
- Release Date: 
- *****************************************************************************/
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ * 
+ ******************************************************************************/
 
 #ifndef __LED_H__
 #define __LED_H__
 
-/*********************************************************************
- * INCLUDES
- */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Includes -------------------------------------------------------------------*/
 #include "st.h"
 
-/*********************************************************************
- * MACROS
- */
-
-/*********************************************************************
- * CONSTANTS
- */
-
-
+/* Exported define ------------------------------------------------------------*/
 /* LEDS - The LED number is the same as the bit position */
 #define LED_0     BV(0)
 #define LED_1     BV(1)
@@ -51,58 +40,25 @@
 #define LED_MODE_TOGGLE  0x08
 
 /* Defaults */
-
 #define LED_DEFAULT_DUTY_CYCLE    5
 #define LED_DEFAULT_FLASH_COUNT   50
 #define LED_DEFAULT_FLASH_TIME    1000
 
-/*********************************************************************
- * TYPEDEFS
- */
+/* Exported typedef -----------------------------------------------------------*/
+/* Exported macro -------------------------------------------------------------*/
+/* Exported variables ---------------------------------------------------------*/
+/* Exported function prototypes -----------------------------------------------*/
+void led_init( void );
+void led_task( st_uint8_t event_id );
+st_uint8_t led_set( st_uint8_t led, st_uint8_t mode );
+void led_blink( st_uint8_t leds, st_uint8_t cnt, st_uint8_t duty, st_uint16_t time );
+void led_enter_sleep( void );
+void led_exit_sleep( void );
+st_uint8_t led_get_state ( void );
 
-
-/*********************************************************************
- * GLOBAL VARIABLES
- */
-
-/*
- * Initialize LED Service.
- */
-extern void led_init( void );
-
-/*
- * LED task.
- */
-extern void led_task( st_uint8_t event_id );
-
-/*
- * Set the LED ON/OFF/TOGGLE.
- */
-extern st_uint8_t led_set( st_uint8_t led, st_uint8_t mode );
-
-/*
- * Blink the LED.
- */
-extern void led_blink( st_uint8_t leds, st_uint8_t cnt, st_uint8_t duty, st_uint16_t time );
-
-/*
- * Put LEDs in sleep state - store current values
- */
-extern void led_enter_sleep( void );
-
-/*
- * Retore LEDs from sleep state
- */
-extern void led_exit_sleep( void );
-
-/*
- * Return LED state
- */
-extern st_uint8_t led_get_state ( void );
-
-
-/*********************************************************************
-*********************************************************************/
-
+#ifdef __cplusplus
+}
 #endif
 
+#endif //__LED_H__
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

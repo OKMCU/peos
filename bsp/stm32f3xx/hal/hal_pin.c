@@ -1,28 +1,29 @@
-/******************************************************************************
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ *
+ ******************************************************************************/
 
- @file  
-
- @brief 
-
- Group: 
- Target Device: 
-
- ******************************************************************************
- 
-
- ******************************************************************************
- Release Name: 
- Release Date: 2016-06-09 06:57:09
- *****************************************************************************/
+/* Includes ------------------------------------------------------------------*/
 #include "stm32f3xx_ll_gpio.h"
 #include "st.h"
 #include "hal.h"
 
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
 typedef struct {
     GPIO_TypeDef * port;
     uint32_t pin;
 } PIN_t;
 
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
 __FLASH static PIN_t pin_list[] = {
     { GPIOA, LL_GPIO_PIN_0 },
     { GPIOA, LL_GPIO_PIN_1 },
@@ -127,11 +128,12 @@ __FLASH static PIN_t pin_list[] = {
     { GPIOF, LL_GPIO_PIN_15 },
 };
 
-
-extern void hal_pin_mode( st_int8_t pin, st_uint8_t mode )
+/* Private function prototypes -----------------------------------------------*/
+/* Exported function implementations -----------------------------------------*/
+extern void hal_pin_mode( st_uint8_t pin, st_uint8_t mode )
 {
 
-    ST_ASSERT( pin >= 0 && pin < sizeof(pin_list)/sizeof(pin_list[0]) );
+    ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
 
     switch( mode )
     {
@@ -179,26 +181,27 @@ extern void hal_pin_mode( st_int8_t pin, st_uint8_t mode )
     }
 }
 
-extern void hal_pin_write( st_int8_t pin, st_uint8_t value )
+extern void hal_pin_write( st_uint8_t pin, st_uint8_t value )
 {
-    ST_ASSERT( pin >= 0 && pin < sizeof(pin_list)/sizeof(pin_list[0]) );
+    ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
     if( value )
         LL_GPIO_SetOutputPin( pin_list[pin].port, pin_list[pin].pin );
     else
         LL_GPIO_ResetOutputPin( pin_list[pin].port, pin_list[pin].pin );
 }
 
-extern void hal_pin_toggle( st_int8_t pin )
+extern void hal_pin_toggle( st_uint8_t pin )
 {
-    ST_ASSERT( pin >= 0 && pin < sizeof(pin_list)/sizeof(pin_list[0]) );
+    ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
     LL_GPIO_TogglePin( pin_list[pin].port, pin_list[pin].pin );
 }
 
-extern st_uint8_t hal_pin_read( st_int8_t pin )
+extern st_uint8_t hal_pin_read( st_uint8_t pin )
 {
-    ST_ASSERT( pin >= 0 && pin < sizeof(pin_list)/sizeof(pin_list[0]) );
+    ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
     return (st_uint8_t)LL_GPIO_IsInputPinSet( pin_list[pin].port, pin_list[pin].pin );
 }
 
+/* Private function implementations ------------------------------------------*/
 
-
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
