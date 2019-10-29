@@ -18,7 +18,7 @@
 #define ST_MSG_EN
 #define ST_CLOCK_EN
 #define ST_TIMER_EN
-//#define ST_TIMER_USE_HEAP
+#define ST_TIMER_USE_HEAP
 #define ST_TIMER_MAX          8             // meaningless if ST_TIMER_STATIC_EN == 0
 #define ST_TIMER_TIMEOUT_MAX  UINT32_MAX    // should be UINT8_MAX or UINT16_MAX or UINT32_MAX
 #define ST_MEM_EN

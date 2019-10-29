@@ -6,6 +6,7 @@
  * Change Logs:
  * Date         Author       Notes
  * 2019-10-28   Wentao SUN   first version
+ * 2019-10-29   Wentao SUN   double check event flag before entering task
  *
  ******************************************************************************/
 
@@ -124,15 +125,19 @@ int main( void )
                 }
 
                 event = BV( event_id );
-                event = ~event;
                 
                 ST_ENTER_CRITICAL();
-                st_task_event_list[task_id] &= event;
-                ST_EXIT_CRITICAL();
-                
-                ST_ASSERT( st_task_list[task_id].p_task_handler != NULL );
-                st_task_list[task_id].p_task_handler( event_id );
-                
+                if( st_task_event_list[task_id] & event )
+                {
+                    st_task_event_list[task_id] &= ~event;
+                    ST_EXIT_CRITICAL();
+                    ST_ASSERT( st_task_list[task_id].p_task_handler != NULL );
+                    st_task_list[task_id].p_task_handler( event_id );
+                }
+                else
+                {
+                    ST_EXIT_CRITICAL();
+                }
                 break;
             }
         }
