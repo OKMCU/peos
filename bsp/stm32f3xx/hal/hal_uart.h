@@ -71,8 +71,8 @@ void hal_uart_open( st_uint8_t port );
 void hal_uart_config( st_uint8_t port, const hal_uart_config_t *cfg );
 void hal_uart_txd( st_uint8_t port, st_uint8_t byte );
 st_uint8_t hal_uart_rxd( st_uint8_t port );
-st_uint8_t hal_uart_chk_tx_buf( st_uint8_t port );
-st_uint8_t hal_uart_chk_rx_buf( st_uint8_t port );
+//st_uint8_t hal_uart_chk_tx_buf( st_uint8_t port );
+//st_uint8_t hal_uart_chk_rx_buf( st_uint8_t port );
 void hal_uart_close( st_uint8_t port );
 
 #ifdef __cplusplus

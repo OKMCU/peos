@@ -11,7 +11,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "st.h"
-#include "hal.h"
+#include "hal_drivers.h"
 #include "components/led/led.h"
 #include "application/demo.h"
 
