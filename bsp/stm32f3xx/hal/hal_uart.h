@@ -17,7 +17,12 @@ extern "C" {
 #endif
 
 /* Includes -------------------------------------------------------------------*/
+#include "st.h"
+
 /* Exported define ------------------------------------------------------------*/
+#define HAL_UART_PORT_0                          0
+#define HAL_UART_PORT_1                          1
+
 #define HAL_UART_BAUD_RATE_2400                  2400
 #define HAL_UART_BAUD_RATE_4800                  4800
 #define HAL_UART_BAUD_RATE_9600                  9600
@@ -26,6 +31,7 @@ extern "C" {
 #define HAL_UART_BAUD_RATE_57600                 57600
 #define HAL_UART_BAUD_RATE_115200                115200
 #define HAL_UART_BAUD_RATE_230400                230400
+#define HAL_UART_BAUD_RATE_256000                256000
 #define HAL_UART_BAUD_RATE_460800                460800
 #define HAL_UART_BAUD_RATE_921600                921600
 #define HAL_UART_BAUD_RATE_2000000               2000000
@@ -63,17 +69,19 @@ typedef struct hal_uart_config {
     st_uint32_t invert      :1;
     st_uint32_t reserved    :6;
     st_uint32_t bufsz       :16;
+    void (*rx_indicate)(st_uint8_t port, st_uint16_t size);
+    void (*tx_complete)(st_uint8_t port, st_uint8_t *buf);
 } hal_uart_config_t;
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
+void hal_uart_init( st_uint8_t port, const hal_uart_config_t *cfg );
 void hal_uart_open( st_uint8_t port );
-void hal_uart_config( st_uint8_t port, const hal_uart_config_t *cfg );
-void hal_uart_txd( st_uint8_t port, st_uint8_t byte );
-st_uint8_t hal_uart_rxd( st_uint8_t port );
-//st_uint8_t hal_uart_chk_tx_buf( st_uint8_t port );
-//st_uint8_t hal_uart_chk_rx_buf( st_uint8_t port );
+st_uint16_t hal_uart_write( st_uint8_t port, const st_uint8_t *buf, st_uint16_t len );
+st_uint16_t hal_uart_read( st_uint8_t port, st_uint8_t *buf, st_uint16_t len );
 void hal_uart_close( st_uint8_t port );
+void hal_uart_deinit( st_uint8_t port );
+
 
 #ifdef __cplusplus
 }
@@ -81,3 +89,4 @@ void hal_uart_close( st_uint8_t port );
 
 #endif //__HAL_UART_H__
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+

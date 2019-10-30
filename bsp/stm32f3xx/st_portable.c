@@ -94,13 +94,23 @@ void st_hal_init( void )
     SysTick_Config( 64000 );
  #endif
 
+    NVIC_SetPriorityGrouping(0);
+    LL_APB2_GRP1_EnableClock( LL_APB2_GRP1_PERIPH_SYSCFG );
     LL_AHB1_GRP1_EnableClock( LL_AHB1_GRP1_PERIPH_GPIOA );
     LL_AHB1_GRP1_EnableClock( LL_AHB1_GRP1_PERIPH_GPIOB );
     LL_AHB1_GRP1_EnableClock( LL_AHB1_GRP1_PERIPH_GPIOC );
     LL_AHB1_GRP1_EnableClock( LL_AHB1_GRP1_PERIPH_GPIOD );
     LL_AHB1_GRP1_EnableClock( LL_AHB1_GRP1_PERIPH_GPIOE );
     LL_AHB1_GRP1_EnableClock( LL_AHB1_GRP1_PERIPH_GPIOF );
-    LL_APB2_GRP1_EnableClock( LL_APB2_GRP1_PERIPH_SYSCFG );
+    
+
+    //NVIC_SetPriority(I2C1_EV_IRQn, 0);
+    //NVIC_SetPriority(I2C1_ER_IRQn, 1);
+    //NVIC_SetPriority(ADC1_2_IRQn,  2);
+    //NVIC_SetPriority(EXTI2_TSC_IRQn,3);
+    //NVIC_SetPriority(EXTI1_IRQn,   4);
+    //NVIC_SetPriority(EXTI0_IRQn,   5);
+    //NVIC_SetPriority(EXTI15_10_IRQn,6);
 }
 
 /* Private function implementations ------------------------------------------*/
