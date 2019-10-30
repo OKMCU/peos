@@ -11,6 +11,7 @@
 
 
 /* Includes ------------------------------------------------------------------*/
+#include "st.h"
 #include "hal_drivers.h"
 
 /* Exported variables --------------------------------------------------------*/
@@ -19,8 +20,10 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+#ifdef ST_USING_HAL_UART
 extern void hal_uart_driver_event_txd( st_uint8_t port );
 extern void hal_uart_driver_event_rxd( st_uint8_t port );
+#endif
 
 /* Exported function implementations -----------------------------------------*/
 void drivers_init( void )

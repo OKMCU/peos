@@ -62,26 +62,24 @@ extern "C" {
 /* Exported typedef -----------------------------------------------------------*/
 typedef struct hal_uart_config {
     st_uint32_t baud_rate;
-    st_uint32_t data_bits   :4;
-    st_uint32_t stop_bits   :2;
-    st_uint32_t parity      :2;
-    st_uint32_t bit_order   :1;
-    st_uint32_t invert      :1;
-    st_uint32_t reserved    :6;
-    st_uint32_t bufsz       :16;
-    void (*rx_indicate)(st_uint8_t port, st_uint16_t size);
-    void (*tx_complete)(st_uint8_t port, st_uint8_t *buf);
+    st_uint16_t data_bits   :4;
+    st_uint16_t stop_bits   :2;
+    st_uint16_t parity      :2;
+    st_uint16_t bit_order   :1;
+    st_uint16_t invert      :1;
+    st_uint16_t reserved    :6;
+    void (*rx_indicate)( st_uint8_t port, st_uint16_t size );
+    void (*tx_complete)( st_uint8_t port );
 } hal_uart_config_t;
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
 void hal_uart_init( st_uint8_t port, const hal_uart_config_t *cfg );
 void hal_uart_open( st_uint8_t port );
-st_uint16_t hal_uart_write( st_uint8_t port, const st_uint8_t *buf, st_uint16_t len );
-st_uint16_t hal_uart_read( st_uint8_t port, st_uint8_t *buf, st_uint16_t len );
+void hal_uart_putc( st_uint8_t port, st_uint8_t byte );
+st_uint8_t hal_uart_getc( st_uint8_t port );
 void hal_uart_close( st_uint8_t port );
 void hal_uart_deinit( st_uint8_t port );
-
 
 #ifdef __cplusplus
 }

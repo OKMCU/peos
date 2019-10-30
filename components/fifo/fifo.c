@@ -15,16 +15,17 @@
  Release Date: 2016-06-09 06:57:09
  *****************************************************************************/
 #include "st.h"
+#include "components\fifo\fifo.h"
 
 typedef struct FIFOPage {
-    uint8_t buf[FIFO_PAGE_SIZE];
-    uint16_t head;
-    uint16_t tail;
+    st_uint8_t buf[FIFO_PAGE_SIZE];
+    st_uint16_t head;
+    st_uint16_t tail;
     struct FIFOPage *nextPage;
 } FIFOPage_t;
 
 typedef struct {
-    uint32_t datalen;
+    st_uint32_t datalen;
     FIFOPage_t *headPage;
     FIFOPage_t *tailPage;
 } FIFOHandle_t;
@@ -58,9 +59,9 @@ void fifo_delete(void *fifo)
     st_mem_free(fifoHandle);
 }
 
-uint8_t *fifo_put(void *fifo, uint8_t byte)
+st_uint8_t *fifo_put(void *fifo, st_uint8_t byte)
 {
-    uint8_t *pos;
+    st_uint8_t *pos;
     FIFOHandle_t *fifoHandle = NULL;
     FIFOPage_t *fifoPage = NULL;
     fifoHandle = (FIFOHandle_t *)fifo;
@@ -80,7 +81,7 @@ uint8_t *fifo_put(void *fifo, uint8_t byte)
         fifoHandle->tailPage = fifoPage;
     }
 
-    if(fifoHandle->tailPage->tail >= ST_FIFO_PAGE_SIZE)
+    if(fifoHandle->tailPage->tail >= FIFO_PAGE_SIZE)
     {
         ST_ASSERT(fifoHandle->tailPage->nextPage == NULL);
         fifoPage = st_mem_alloc(sizeof(FIFOPage_t));
@@ -105,14 +106,14 @@ uint8_t *fifo_put(void *fifo, uint8_t byte)
     
 }
 
-uint32_t fifo_len(void *fifo)
+st_uint32_t fifo_len(void *fifo)
 {
     return ((FIFOHandle_t *)fifo)->datalen;
 }
 
-uint8_t fifo_get(void *fifo)
+st_uint8_t fifo_get(void *fifo)
 {
-    uint8_t u8tmp = 0;
+    st_uint8_t u8tmp = 0;
     FIFOHandle_t *fifoHandle = NULL;
     FIFOPage_t *fifoPage = NULL;
     fifoHandle = (FIFOHandle_t *)fifo;

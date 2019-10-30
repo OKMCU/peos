@@ -14,6 +14,7 @@
 #include "stm32f3xx_ll_usart.h"
 #include "hal_drivers.h"
 #include "hal_uart.h"
+#include "components\fifo\fifo.h"
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -22,6 +23,10 @@
 #define UART0_TX_CACHE_SIZE         8
 #define UART1_RX_CACHE_SIZE         8
 #define UART1_TX_CACHE_SIZE         8
+#define UART0_RX_FIFO_SIZE           128
+#define UART0_TX_FIFO_SIZE           128
+#define UART1_RX_FIFO_SIZE           128
+#define UART1_TX_FIFO_SIZE           128
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct {
@@ -29,19 +34,19 @@ typedef struct {
     st_uint8_t *tx_cache;
     st_uint8_t rx_cache_size;
     st_uint8_t tx_cache_size;
-} uart_cache_t;
+    st_uint16_t rx_fifo_size;
+    st_uint16_t tx_fifo_size;
+} uart_mem_t;
 
 typedef struct {
-    void (*rx_indicate)(st_uint8_t port, st_uint16_t size);
-    void (*tx_complete)(st_uint8_t port, st_uint8_t *buf);
-    st_uint8_t *rx_buf;
-    st_uint8_t **tx_buf;
-    st_uint16_t rx_len;
-    st_uint16_t tx_len;
+    void (*rx_indicate)( st_uint8_t port, st_uint16_t size );
+    void (*tx_complete)( st_uint8_t port );
     st_uint8_t rx_head;
     st_uint8_t rx_tail;
     st_uint8_t tx_head;
     st_uint8_t tx_tail;
+    void *rx_fifo;
+    void *tx_fifo;
 } uart_ctrl_t;
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,18 +56,22 @@ static st_uint8_t uart0_tx_cache[UART0_TX_CACHE_SIZE];
 static st_uint8_t uart1_rx_cache[UART1_RX_CACHE_SIZE];
 static st_uint8_t uart1_tx_cache[UART1_TX_CACHE_SIZE];
 
-static const uart_cache_t [UART_PORT_MAX] = {
+static const uart_mem_t uart_mem[UART_PORT_MAX] = {
     { 
         .rx_cache = uart0_rx_cache, 
         .tx_cache = uart0_tx_cache, 
         .rx_cache_size = sizeof(uart0_rx_cache), 
         .tx_cache_size = sizeof(uart0_tx_cache),
+        .rx_fifo_size = UART0_RX_FIFO_SIZE,
+        .tx_fifo_size = UART0_TX_FIFO_SIZE,
     },
     { 
         .rx_cache = uart1_rx_cache, 
         .tx_cache = uart1_tx_cache, 
         .rx_cache_size = sizeof(uart1_rx_cache), 
         .tx_cache_size = sizeof(uart1_tx_cache),
+        .rx_fifo_size = UART1_RX_FIFO_SIZE,
+        .tx_fifo_size = UART1_TX_FIFO_SIZE,
     },
 };
 
@@ -204,7 +213,7 @@ void hal_uart_open( st_uint8_t port )
   * @note   None
   * @retval None
   */
-st_uint16_t hal_uart_write( st_uint8_t port, const st_uint8_t *buf, st_uint16_t len )
+void hal_uart_putc( st_uint8_t port, st_uint8_t byte )
 {
     ST_ASSERT( port < UART_PORT_MAX );
 }
@@ -216,7 +225,7 @@ st_uint16_t hal_uart_write( st_uint8_t port, const st_uint8_t *buf, st_uint16_t 
   * @note   None
   * @retval None
   */
-st_uint16_t hal_uart_read( st_uint8_t port, st_uint8_t *buf, st_uint16_t len )
+st_uint8_t hal_uart_getc( st_uint8_t port )
 {
     ST_ASSERT( port < UART_PORT_MAX );
 }
@@ -256,8 +265,6 @@ void hal_uart_deinit( st_uint8_t port )
             LL_APB1_GRP1_ReleaseReset( LL_APB1_GRP1_PERIPH_USART2 );
         break;
     }
-
-    
 }
 
 /* Private function implementations ------------------------------------------*/
