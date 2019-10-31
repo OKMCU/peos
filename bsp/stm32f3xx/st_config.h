@@ -44,7 +44,7 @@
  * Single-Thread Components - LED
  ******************************************************************************/
 #define ST_USING_LED
-#ifdef ST_USING_LED
+#ifdef  ST_USING_LED
 #define LED_0_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 6 )
 #define LED_1_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 9 )
 #define LED_2_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 10 )
@@ -60,8 +60,20 @@
 /*******************************************************************************
  * Single-Thread Components - FIFO buffer
  ******************************************************************************/
-#define FIFO_EN
-#define FIFO_PAGE_SIZE        64
+#define ST_FIFO_EN
+#ifdef  ST_FIFO_EN
+#define FIFO_PAGE_SIZE          64
+#endif
+
+/*******************************************************************************
+ * Single-Thread Components - CLI
+ ******************************************************************************/
+#define ST_USING_CLI
+#ifdef  ST_USING_CLI
+#define CLI_UART_PORT           HAL_UART_PORT_1
+#define CLI_MAX_CMD_LENGTH      128
+#endif
+
 
 /* C++ features */
 

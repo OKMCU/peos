@@ -96,6 +96,12 @@ int main( void )
 
     /* Enable Interrupts */
     ST_EXIT_CRITICAL();
+
+    for( task_id = 0; task_id < ST_TASK_MAX; task_id++ )
+    {
+        if( st_task_list[task_id].p_task_init != NULL )
+            st_task_list[task_id].p_task_init();
+    }
     
     /* Start OSAL */
     for(;;)
@@ -153,8 +159,6 @@ int main( void )
 /* Private function implementations ------------------------------------------*/
 static void st_sys_init ( void )
 {
-    st_uint8_t i;
-    
     st_memset( st_task_event_list, 0, sizeof(st_task_event_list) );
     
 #ifdef ST_MEM_EN
@@ -172,12 +176,6 @@ static void st_sys_init ( void )
 #ifdef ST_MSG_EN
     st_msg_init();
 #endif /* ( ST_MSG_EN > 0 ) */
-
-    for( i = 0; i < ST_TASK_MAX; i++ )
-    {
-        if( st_task_list[i].p_task_init != NULL )
-            st_task_list[i].p_task_init();
-    }
 }
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

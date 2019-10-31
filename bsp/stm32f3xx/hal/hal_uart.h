@@ -22,6 +22,12 @@ extern "C" {
 /* Exported define ------------------------------------------------------------*/
 #define HAL_UART_PORT_0                          0
 #define HAL_UART_PORT_1                          1
+#define HAL_UART_PORT_MAX                        2
+
+#define HAL_UART_EVENT_RXD                       0  // received one or more bytes, rx buffer is not empty
+#define HAL_UART_EVENT_TXD                       1  // transmitted one or more bytes, tx buffer is not full
+#define HAL_UART_EVENT_OVF                       2  // received buffer overflow
+#define HAL_UART_EVENT_PERR                      3  // parity error
 
 #define HAL_UART_BAUD_RATE_2400                  2400
 #define HAL_UART_BAUD_RATE_4800                  4800
@@ -68,9 +74,9 @@ typedef struct hal_uart_config {
     st_uint16_t bit_order   :1;
     st_uint16_t invert      :1;
     st_uint16_t reserved    :6;
-    void (*rx_indicate)( st_uint8_t port, st_uint16_t size );
-    void (*tx_complete)( st_uint8_t port );
+    void (*callback)( st_uint8_t event );
 } hal_uart_config_t;
+
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
@@ -78,6 +84,8 @@ void hal_uart_init( st_uint8_t port, const hal_uart_config_t *cfg );
 void hal_uart_open( st_uint8_t port );
 void hal_uart_putc( st_uint8_t port, st_uint8_t byte );
 st_uint8_t hal_uart_getc( st_uint8_t port );
+st_uint8_t hal_uart_tx_buf_free( st_uint8_t port );
+st_uint8_t hal_uart_rx_buf_used( st_uint8_t port );
 void hal_uart_close( st_uint8_t port );
 void hal_uart_deinit( st_uint8_t port );
 

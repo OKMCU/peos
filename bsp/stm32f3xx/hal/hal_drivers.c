@@ -23,6 +23,8 @@
 #ifdef ST_USING_HAL_UART
 extern void hal_uart_driver_event_txd( st_uint8_t port );
 extern void hal_uart_driver_event_rxd( st_uint8_t port );
+extern void hal_uart_driver_event_ovf( st_uint8_t port );
+extern void hal_uart_driver_event_perr( st_uint8_t port );
 #endif
 
 /* Exported function implementations -----------------------------------------*/
@@ -50,6 +52,22 @@ void drivers_task ( st_uint8_t event_id )
 
         case TASK_EVT_DRIVERS_UART1_TXD:
             hal_uart_driver_event_txd( HAL_UART_PORT_1 );
+        break;
+
+        case TASK_EVT_DRIVERS_UART0_PERR:
+            hal_uart_driver_event_perr( HAL_UART_PORT_0 );
+        break;
+
+        case TASK_EVT_DRIVERS_UART1_PERR:
+            hal_uart_driver_event_perr( HAL_UART_PORT_1 );
+        break;
+
+        case TASK_EVT_DRIVERS_UART0_OVF:
+            hal_uart_driver_event_ovf( HAL_UART_PORT_0 );
+        break;
+
+        case TASK_EVT_DRIVERS_UART1_OVF:
+            hal_uart_driver_event_ovf( HAL_UART_PORT_1 );
         break;
 
         default:

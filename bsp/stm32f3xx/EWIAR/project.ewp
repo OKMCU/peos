@@ -996,6 +996,9 @@
     <file>
       <name>$PROJ_DIR$\..\hal\hal_pin.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\hal\hal_uart.c</name>
+    </file>
   </group>
   <group>
     <name>kernel</name>

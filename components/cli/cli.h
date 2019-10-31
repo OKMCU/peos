@@ -1,39 +1,23 @@
-/******************************************************************************
+#ifndef __CLI_H__
+#define __CLI_H__
 
- @file  
+#include "st.h"
 
- @brief 
+typedef struct {
+    char *string;
+    void handler( st_uint8_t argc, char **argv );
+} cli_cmd_t;
 
- Group: 
- Target Device: 
+void cli_init( void );
+void cli_task( st_uint8_t event );
 
- ******************************************************************************
- 
+void cli_register_cmds( const cli_cmd_t *cmd );
+void cli_print_char( char ch );
+void cli_print_str( const char *s );
+void cli_print_sint( st_int32_t num );
+void cli_print_uint( st_uint32_t num );
+void cli_print_hex8( st_uint8_t num );
+void cli_print_hex16( st_uint16_t num );
+void cli_print_hex32( st_uint32_t num );
 
- ******************************************************************************
- Release Name: 
- Release Date: 2016-06-09 06:57:09
- *****************************************************************************/
- 
-#ifndef __HAL_CLI_H__
-#define __HAL_CLI_H__
-
-
-#include "stdint.h"
-#include "hal_config.h"
-
-extern void hal_cli_init         ( void );
-extern uint8_t hal_cli_rx_len    ( void );
-extern void hal_cli_putchar      ( char c );
-extern char hal_cli_getchar      ( void );
-#if (HAL_CLI_PRINT_EN > 0)
-extern void hal_cli_print_str    ( const char *s );
-extern void hal_cli_print_sint   ( int32_t num );
-extern void hal_cli_print_uint   ( uint32_t num );
-extern void hal_cli_print_hex8   ( uint8_t num );
-extern void hal_cli_print_hex16  ( uint16_t num );
-extern void hal_cli_print_hex32  ( uint32_t num );
-#endif
-
-#endif /* __HAL_CLI_H__ */
-
+#endif /* __CLI_H__ */

@@ -1,100 +1,113 @@
-/******************************************************************************
 
- @file  
-
- @brief 
-
- Group: 
- Target Device: 
-
- ******************************************************************************
- 
-
- ******************************************************************************
- Release Name: 
- Release Date: 2016-06-09 06:57:09
- *****************************************************************************/
- 
-#include "osal.h"
-#include "spl.h"
-
-#include "hal_config.h"
-#include "hal_assert.h"
-#include "hal_cli.h"
-
-#include "main.h"
-
-#include "stdstr.h"
-#include "stringx.h"
-#include "bufmgr.h"
-
-#if (HAL_CLI_EN > 0)
-
-#define HAL_CLI_RX_DATA_BLK_SIZE    8
+#include "st.h"
+#include "hal_drivers.h"
+#include "components/cli/cli.h"
+#include "components/fifo/fifo.h"
 
 static void *tx_fifo;
-static void *rx_fifo;
+static char *rx_buff;
+static cli_cmd_t *cmd;
 //#define IS_CHAR(x)  ( x > 0 && x <= 127 )
 
-
-extern void hal_cli_init( void )
-{   
-    tx_fifo = NULL;
-    rx_fifo = NULL;
-}
-
-extern uint8_t hal_cli_rx_len    ( void )
+static void cli_uart_driver_callback( st_uint8_t event )
 {
-    uint32_t len;
+    st_uint8_t size;
     
-    if( rx_fifo != NULL )
+    switch ( event )
     {
-        len = osal_fifo_len( rx_fifo );
-        HAL_ASSERT( len <= HAL_CLI_RX_BUF_SIZE );
-        return (uint8_t) len;
+        case HAL_UART_EVENT_RXD:
+            
+        break;
+
+        case HAL_UART_EVENT_TXD:
+            if( tx_fifo )
+            {
+                size = hal_uart_tx_buf_free(CLI_UART_PORT);
+                while( size-- )
+                {
+                    if( fifo_len(tx_fifo) )
+                    {
+                        hal_uart_putc(CLI_UART_PORT, fifo_get(tx_fifo));
+                    }
+                    else
+                    {
+                        fifo_delete( tx_fifo );
+                        tx_fifo = NULL;
+                    }
+                }
+            }
+        break;
+
+        case HAL_UART_EVENT_OVF:
+        break;
+
+        case HAL_UART_EVENT_PERR:
+        break;
     }
-    
-    return 0;
 }
 
-extern void hal_cli_putchar(char c)
+void cli_init( void )
 {
-    uint8_t *pc;
+    hal_uart_config_t cfg;
+    
+    tx_fifo = NULL;
+    rx_buff = NULL;
+    cfg.baud_rate = HAL_UART_BAUD_RATE_115200;
+    cfg.data_bits = HAL_UART_DATA_BITS_8;
+    cfg.stop_bits = HAL_UART_STOP_BITS_1;
+    cfg.parity    = HAL_UART_PARITY_NONE;
+    cfg.bit_order = HAL_UART_BIT_ORDER_LSB;
+    cfg.invert    = HAL_UART_NRZ_NORMAL;
+    cfg.callback  = cli_uart_driver_callback;
+
+    hal_uart_init( CLI_UART_PORT, &cfg );
+    hal_uart_open( CLI_UART_PORT );
+}
+
+void cli_task( st_uint8_t event )
+{
+
+}
+
+void cli_register_cmds( const cli_cmd_t *cmd )
+{
+    
+}
+
+void cli_print_char( char ch )
+{
+    st_uint8_t *pc;
+
     if(tx_fifo == NULL)
-        tx_fifo = osal_fifo_create();
-    HAL_ASSERT( tx_fifo != NULL );
-    pc = osal_fifo_put( tx_fifo, (uint8_t)c );
-    HAL_ASSERT( pc != NULL );
-    osal_event_set( TASK_ID_HAL_DRIVER_BASIC, TASK_EVT_HAL_DRIVER_BASIC_CLI_TXE );
-}
-
-extern char hal_cli_getchar( void )
-{
-    char c;
-    
-    c = '\0';
-    
-    if( rx_fifo != NULL )
     {
-        c = (char)osal_fifo_get( rx_fifo );
-        if( osal_fifo_len( rx_fifo ) == 0 )
+        if( hal_uart_tx_buf_free(CLI_UART_PORT) )
         {
-            osal_fifo_delete( rx_fifo );
-            rx_fifo = NULL;
+            hal_uart_putc( CLI_UART_PORT, (st_uint8_t)ch );
+        }
+        else
+        {
+            tx_fifo = fifo_create();
+            ST_ASSERT( tx_fifo != NULL );
+            pc = fifo_put( tx_fifo, (st_uint8_t)ch );
+            ST_ASSERT( pc != NULL );
         }
     }
-    return c;
+    else
+    {
+        pc = fifo_put( tx_fifo, (st_uint8_t)ch );
+        ST_ASSERT( pc != NULL );
+    }
 }
 
-#if (HAL_CLI_PRINT_EN > 0)
 extern void hal_cli_print_str(const char *s)
 {
     while(*s)
     {
-        hal_cli_putchar(*s++);
+        cli_print_char(*s++);
     }
 }
 
+#if 0
 extern void hal_cli_print_sint(int32_t num)
 {
     char str[SINT_STR_LEN_MAX];
@@ -250,6 +263,4 @@ extern void spl_uart0_callback( uint8_t event )
     }
     
 }
-
-#endif /* (HAL_CLI_EN > 0) */
 

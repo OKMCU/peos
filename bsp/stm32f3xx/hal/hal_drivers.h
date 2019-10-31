@@ -9,6 +9,10 @@
 #define TASK_EVT_DRIVERS_UART1_RXD           1
 #define TASK_EVT_DRIVERS_UART0_TXD           2
 #define TASK_EVT_DRIVERS_UART1_TXD           3
+#define TASK_EVT_DRIVERS_UART0_PERR          4
+#define TASK_EVT_DRIVERS_UART1_PERR          5
+#define TASK_EVT_DRIVERS_UART0_OVF           6
+#define TASK_EVT_DRIVERS_UART1_OVF           7
 
 #define CPU_SYSCLK                          (64000000uL)
 #define CPU_HCLK                            (64000000uL)
