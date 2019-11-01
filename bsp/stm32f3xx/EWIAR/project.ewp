@@ -985,7 +985,16 @@
   <group>
     <name>components</name>
     <file>
+      <name>$PROJ_DIR$\..\..\..\components\cli\cli.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\components\fifo\fifo.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\components\led\led.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\components\utilities\rbuf.c</name>
     </file>
   </group>
   <group>

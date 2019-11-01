@@ -80,14 +80,12 @@ typedef struct hal_uart_config {
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-void hal_uart_init( st_uint8_t port, const hal_uart_config_t *cfg );
-void hal_uart_open( st_uint8_t port );
+void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg );
 void hal_uart_putc( st_uint8_t port, st_uint8_t byte );
 st_uint8_t hal_uart_getc( st_uint8_t port );
 st_uint8_t hal_uart_tx_buf_free( st_uint8_t port );
 st_uint8_t hal_uart_rx_buf_used( st_uint8_t port );
 void hal_uart_close( st_uint8_t port );
-void hal_uart_deinit( st_uint8_t port );
 
 #ifdef __cplusplus
 }

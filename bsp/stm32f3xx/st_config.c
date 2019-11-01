@@ -13,6 +13,7 @@
 #include "st.h"
 #include "hal_drivers.h"
 #include "components/led/led.h"
+#include "components/cli/cli.h"
 #include "application/demo.h"
 
 /* Exported variables --------------------------------------------------------*/
@@ -20,6 +21,7 @@ __FLASH ST_TASK_t st_task_list[ST_TASK_MAX] = {
     { drivers_init, drivers_task, "driver" },
     { led_init, led_task, "led" },
     { demo_init, demo_task, "demo" },
+    { cli_init, cli_task, "cli" },
 };
 
 /* Private define ------------------------------------------------------------*/

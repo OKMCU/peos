@@ -12,11 +12,24 @@ static cli_cmd_t *cmd;
 static void cli_uart_driver_callback( st_uint8_t event )
 {
     st_uint8_t size;
+    st_uint8_t i;
+    char *p_msg;
     
     switch ( event )
     {
         case HAL_UART_EVENT_RXD:
-            
+            size = hal_uart_rx_buf_used(CLI_UART_PORT);
+            if( size )
+            {
+                p_msg = (char *)st_msg_create(size);
+                ST_ASSERT( p_msg != NULL );
+                
+                for( i = 0; i < size; i++ )
+                {
+                    p_msg[i] = hal_uart_getc(CLI_UART_PORT);
+                }
+                st_msg_send( p_msg, TASK_ID_CLI );
+            }
         break;
 
         case HAL_UART_EVENT_TXD:
@@ -33,15 +46,18 @@ static void cli_uart_driver_callback( st_uint8_t event )
                     {
                         fifo_delete( tx_fifo );
                         tx_fifo = NULL;
+                        break;
                     }
                 }
             }
         break;
 
         case HAL_UART_EVENT_OVF:
+            // ignored
         break;
 
         case HAL_UART_EVENT_PERR:
+            // ignored
         break;
     }
 }
@@ -60,13 +76,24 @@ void cli_init( void )
     cfg.invert    = HAL_UART_NRZ_NORMAL;
     cfg.callback  = cli_uart_driver_callback;
 
-    hal_uart_init( CLI_UART_PORT, &cfg );
-    hal_uart_open( CLI_UART_PORT );
+    hal_uart_open( CLI_UART_PORT, &cfg );
 }
 
 void cli_task( st_uint8_t event )
 {
-
+    st_uint16_t len, i;
+    char *p_msg;
+    ST_ASSERT( event == ST_TASK_EVENT_MSG );
+    
+    p_msg = st_msg_recv( st_get_task_id_self() );
+    ST_ASSERT( p_msg != NULL );
+    len = st_msg_len( p_msg );
+    i = 0;
+    while( len-- )
+    {
+        cli_print_char( p_msg[i++] );
+    }
+    st_msg_delete( p_msg );
 }
 
 void cli_register_cmds( const cli_cmd_t *cmd )
@@ -99,7 +126,7 @@ void cli_print_char( char ch )
     }
 }
 
-extern void hal_cli_print_str(const char *s)
+void cli_print_str(const char *s)
 {
     while(*s)
     {
@@ -180,87 +207,4 @@ extern void hal_cli_print_hex32(uint32_t num)
     }
 }
 #endif
-
-extern void hal_cli_driver_handle_rxne( void )
-{
-    char c;
-    uint8_t *pc;
-    
-    if( rx_fifo == NULL )
-        rx_fifo = osal_fifo_create();
-    
-    if( rx_fifo != NULL )
-    {
-        while( !spl_uart_rxd_empty(SPL_UART_PORT_0) )
-        {
-            c = spl_uart_rxd( SPL_UART_PORT_0 );
-
-            if( osal_fifo_len( rx_fifo ) < HAL_CLI_RX_BUF_SIZE )
-            {
-                pc = osal_fifo_put( rx_fifo, (uint8_t)c );
-                if( pc != NULL )
-                {
-                    osal_event_set( TASK_ID_APP_CLI, TASK_EVT_APP_CLI_RX_CHAR );
-                }
-                else
-                {
-                    HAL_ASSERT_FORCED();
-                }
-            }
-            else
-            {
-                osal_event_set( TASK_ID_APP_CLI, TASK_EVT_APP_CLI_RX_OVF );
-            }
-        }
-    }
-    else
-    {
-        HAL_ASSERT_FORCED();
-    }
-}
-
-extern void hal_cli_driver_handle_txe( void )
-{
-    uint8_t b;
-    
-    if( tx_fifo != NULL )
-    {
-        while( !spl_uart_txd_full(SPL_UART_PORT_0) )
-        {
-            if( osal_fifo_len( tx_fifo ) )
-            {
-                b = osal_fifo_get(tx_fifo);
-                spl_uart_txd( SPL_UART_PORT_0, b );
-            }
-            else
-            {
-                osal_fifo_delete( tx_fifo );
-                tx_fifo = NULL;
-                break;
-            }
-        }
-    }
-}
-
-extern void spl_uart0_callback( uint8_t event )
-{
-    switch (event)
-    {
-        case SPL_UART_ISR_EVT_RXD:
-            osal_event_set( TASK_ID_HAL_DRIVER_BASIC, TASK_EVT_HAL_DRIVER_BASIC_CLI_RXNE );
-        break;
-
-        case SPL_UART_ISR_EVT_TXD_EMPTY:
-            osal_event_set( TASK_ID_HAL_DRIVER_BASIC, TASK_EVT_HAL_DRIVER_BASIC_CLI_TXE );
-        break;
-        
-        case SPL_UART_ISR_EVT_RXD_FULL:
-            osal_event_set( TASK_ID_APP_CLI, TASK_EVT_APP_CLI_RX_OVF );
-        break;
-
-        default:
-        break;
-    }
-    
-}
 

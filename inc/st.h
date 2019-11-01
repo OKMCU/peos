@@ -26,7 +26,7 @@ extern "C" {
 /* Exported define ------------------------------------------------------------*/
 /* Exported typedef -----------------------------------------------------------*/
 /* Exported macro -------------------------------------------------------------*/
-#ifdef ST_ASSERT_EN
+#ifndef ST_ASSERT_EN
 #define ST_ASSERT(expr)                        
 #define ST_ASSERT_FORCED()
 #define ST_ASSERT_STATEMENT(statement)

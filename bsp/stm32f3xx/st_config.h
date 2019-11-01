@@ -39,6 +39,7 @@
 #define TASK_ID_DRIVERS         0
 #define TASK_ID_LED             1
 #define TASK_ID_DEMO            2
+#define TASK_ID_CLI             3
 
 /*******************************************************************************
  * Single-Thread Components - LED

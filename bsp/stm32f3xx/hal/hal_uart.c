@@ -117,7 +117,7 @@ extern void USART2_IRQHandler( void );
   * @note   None
   * @retval None
   */
-void hal_uart_init( st_uint8_t port, const hal_uart_config_t *cfg )
+void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
 {
     ST_ASSERT( port < HAL_UART_PORT_MAX );
     ST_ASSERT( cfg != NULL );
@@ -221,20 +221,9 @@ void hal_uart_init( st_uint8_t port, const hal_uart_config_t *cfg )
     // init uart control body info
     st_memset( &uart_ctrl[port], 0, sizeof(uart_ctrl_t) );
     uart_ctrl[port].callback = cfg->callback;
-}
-
-/**
-  * @brief  Function brief
-  * @param  param1
-  * @param  param2
-  * @note   None
-  * @retval None
-  */
-void hal_uart_open( st_uint8_t port )
-{
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
 
     LL_USART_EnableDirectionRx( USARTx[port] );
+    LL_USART_EnableDirectionTx( USARTx[port] );
     LL_USART_EnableIT_RXNE( USARTx[port] );
     LL_USART_Enable( USARTx[port] );
 }
@@ -325,22 +314,11 @@ void hal_uart_close( st_uint8_t port )
     LL_USART_DisableDirectionRx( USARTx[port] );
     LL_USART_DisableIT_RXNE( USARTx[port] );
     LL_USART_Disable( USARTx[port] );
-}
 
-/**
-  * @brief  Function brief
-  * @param  param1
-  * @param  param2
-  * @note   None
-  * @retval None
-  */
-void hal_uart_deinit( st_uint8_t port )
-{
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
-    
     switch ( port )
     {
         case HAL_UART_PORT_0:
+            NVIC_DisableIRQ( USART1_IRQn );
             LL_GPIO_SetPinMode( GPIOE, LL_GPIO_PIN_0, LL_GPIO_MODE_ANALOG ); // PE0: USART1_TX
             LL_GPIO_SetPinMode( GPIOE, LL_GPIO_PIN_1, LL_GPIO_MODE_ANALOG ); // PE1: USART1_RX
             LL_GPIO_SetPinPull( GPIOE, LL_GPIO_PIN_0, LL_GPIO_PULL_NO );
@@ -349,6 +327,7 @@ void hal_uart_deinit( st_uint8_t port )
         break;
 
         case HAL_UART_PORT_1:
+            NVIC_DisableIRQ( USART2_IRQn );
             LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ANALOG ); // PA2: USART2_TX
             LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_3, LL_GPIO_MODE_ANALOG ); // PA3: USART2_RX
             LL_GPIO_SetPinPull( GPIOA, LL_GPIO_PIN_2, LL_GPIO_PULL_NO );

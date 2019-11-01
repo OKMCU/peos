@@ -5,7 +5,7 @@
 
 typedef struct {
     char *string;
-    void handler( st_uint8_t argc, char **argv );
+    void (*handler)( st_uint8_t argc, char **argv );
 } cli_cmd_t;
 
 void cli_init( void );
