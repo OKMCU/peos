@@ -50,7 +50,7 @@ typedef size_t      st_size_t;
 /* Exported variables ---------------------------------------------------------*/
 
 /* Exported function prototypes -----------------------------------------------*/
-void st_hal_init( void );
+void st_por_hook( void );
 void st_idle_hook( void );
 #ifdef ST_ASSERT_EN
 void st_assert_failed(char *file, st_uint32_t line);

@@ -19,207 +19,129 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static ST_MSG_t *p_msg_list_head;
-static ST_MSG_t *p_msg_list_tail;
+extern ST_TCB_t st_task_list[ST_TASK_MAX];
 
 /* Private function prototypes -----------------------------------------------*/
-static ST_MSG_t *st_msg_list_find( ST_MSG_t *p_node );
-static void st_msg_list_del( ST_MSG_t *p_node );
-static void st_msg_list_add( ST_MSG_t *p_node_new );
+void __st_msg_delete ( void *pmsg );
+void *__st_msg_recv( st_uint8_t task_id );
 
 /* Exported function implementations -----------------------------------------*/
-void     st_msg_init         ( void )
+void *st_msg_create ( st_uint16_t len, st_uint8_t type, st_err_t *err )
 {
-    p_msg_list_head = NULL;
-    p_msg_list_tail = NULL;
-}
+    ST_MSG_t *pnode_new;
+    void *pmsg = NULL;
 
-void *st_msg_create ( st_uint16_t len )
-{
-    ST_MSG_t *p_node_new;
-    void *p_msg;
-
-    ST_ASSERT( len > 0 );
-    
-    p_node_new = (ST_MSG_t *)st_mem_alloc( sizeof(ST_MSG_t) + len );
-
-    if( p_node_new == NULL )
-        return NULL;
-    
-    p_msg = (void *)( (st_uint8_t *)p_node_new + sizeof( ST_MSG_t ) );
-    
-    p_node_new->len = len;
-    p_node_new->type = 0;
-    
-    return p_msg;
-}
-
-void st_msg_delete ( void *p_msg )
-{
-    ST_MSG_t *p_node;
-
-    ST_ASSERT( p_msg != NULL );
-
-    p_node = (ST_MSG_t *)((st_uint8_t *)p_msg - sizeof(ST_MSG_t));
-    
-    if( st_msg_list_find( p_node ) != NULL )
+    if( len > 0 )
     {
-        //kick it out of the list
-        st_msg_list_del( p_node );
+        pnode_new = (ST_MSG_t *)st_mem_alloc( sizeof(ST_MSG_t) + len );
+        if( pnode_new )
+        {
+            pmsg = (void *)( (st_uint8_t *)pnode_new + sizeof( ST_MSG_t ) );
+            pnode_new->len = len;
+            pnode_new->type = type;
+            if( err ) *err = ST_ERR_NONE;
+        }
+        else
+        {
+            if( err ) *err = ST_ERR_NOMEM;
+        }
+    }
+    else
+    {
+        if( err ) *err = ST_ERR_INVAL;
     }
     
-    //free the RAM of the msg node
-    st_mem_free( p_node );
+    return pmsg;
 }
 
-void st_msg_send ( void *p_msg, st_uint8_t task_id )
+void __st_msg_delete ( void *pmsg )
 {
-    ST_MSG_t *p_node;
-    
-    ST_ASSERT( p_msg != NULL );
-    p_node = (ST_MSG_t *)((st_uint8_t *)p_msg - sizeof(ST_MSG_t));
-    ST_ASSERT( st_msg_list_find( p_node ) == NULL );
-    
-    p_node->task_id = task_id;
-    st_msg_list_add( p_node );
-    st_task_set_event( task_id, ST_TASK_EVENT_MSG );
+    st_mem_free( (st_uint8_t *)pmsg - sizeof(ST_MSG_t) );
 }
 
-void st_msg_fwrd ( void *p_msg, st_uint8_t task_id )
+st_err_t st_msg_send ( void *pmsg, st_uint8_t task_id )
 {
-    ST_MSG_t *p_node;
-    
-    ST_ASSERT( p_msg != NULL );
-    p_node = (ST_MSG_t *)((st_uint8_t *)p_msg - sizeof(ST_MSG_t));
-    ST_ASSERT( st_msg_list_find( p_node ) != NULL );
-    p_node->task_id = task_id;
-    st_task_set_event( task_id, ST_TASK_EVENT_MSG );
-}
+    ST_MSG_t *pnode;
 
-void *st_msg_recv ( st_uint8_t task_id )
-{
-    ST_MSG_t *p_node_match;
-    void *p_msg;
-    
-    if( p_msg_list_head == NULL || p_msg_list_tail == NULL )
-        return NULL;
-
-    //find the timer at the tail
-    p_node_match = p_msg_list_head;
-    while( p_node_match->task_id != task_id )
+    if( task_id < ST_TASK_MAX )
     {
-        p_node_match = p_node_match->p_node_next;
-        if( p_node_match == NULL )
-            return NULL;
+        pnode = (ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t));
+        pnode->from_task_id = st_get_task_id_self();
+
+        if( st_task_list[task_id].ptail )
+        {
+            st_task_list[task_id].ptail->p_msg_next = pnode;
+        }
+        else
+        {
+            st_task_list[task_id].phead = pnode;
+        }
+        st_task_list[task_id].ptail = pnode;
+        return ST_ERR_NONE;
     }
 
-    p_msg = (void *)((st_uint8_t *)p_node_match + sizeof(ST_MSG_t));
-    return p_msg;
+    return ST_ERR_INVAL;
 }
 
-st_uint16_t st_msg_len ( void *p_msg )
+st_err_t st_msg_send_urgent ( void *pmsg, st_uint8_t task_id )
 {
-    ST_MSG_t *p_node;
-    
-    ST_ASSERT( p_msg != NULL );
-    p_node = (ST_MSG_t *)((st_uint8_t *)p_msg - sizeof(ST_MSG_t));
-    
-    return p_node->len;
+    ST_MSG_t *pnode;
+
+    if( task_id < ST_TASK_MAX )
+    {
+        pnode = (ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t));
+        pnode->from_task_id = st_get_task_id_self();
+
+        if( st_task_list[task_id].phead )
+        {
+            pnode->p_msg_next = st_task_list[task_id].phead;
+        }
+        else
+        {
+            st_task_list[task_id].ptail = pnode;
+        }
+        st_task_list[task_id].phead = pnode;
+        return ST_ERR_NONE;
+    }
+    return ST_ERR_INVAL;
 }
 
-st_uint8_t st_msg_get_type ( void *p_msg )
+
+void *__st_msg_recv( st_uint8_t task_id )
 {
-    ST_MSG_t *p_node;
+    void *pmsg = NULL;
     
-    ST_ASSERT( p_msg != NULL );
-    p_node = (ST_MSG_t *)((st_uint8_t *)p_msg - sizeof(ST_MSG_t));
+    if( st_task_list[task_id].phead != NULL )
+    {
+        pmsg = (void *)((st_uint8_t *)st_task_list[task_id].phead + sizeof(ST_MSG_t));
+        st_task_list[task_id].phead = st_task_list[task_id].phead->p_msg_next;
+        if( st_task_list[task_id].phead == NULL )
+        {
+            st_task_list[task_id].ptail = NULL;
+        }
+    }
     
-    return p_node->type;
+    return pmsg;
 }
 
-void st_msg_set_type     ( void *p_msg, st_uint8_t type )
+st_uint16_t st_msg_len ( void *pmsg )
 {
-    ST_MSG_t *p_node;
-    
-    ST_ASSERT( p_msg != NULL );
-    p_node = (ST_MSG_t *)((st_uint8_t *)p_msg - sizeof(ST_MSG_t));
-    
-    p_node->type = type;
+    return ((ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t)))->len;
 }
+
+st_uint8_t st_msg_type ( void *pmsg )
+{
+    return ((ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t)))->type;
+}
+
+st_uint8_t st_msg_from ( void *pmsg )
+{
+    return ((ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t)))->from_task_id;
+}
+
 
 /* Private function implementations ------------------------------------------*/
-static ST_MSG_t *st_msg_list_find( ST_MSG_t *p_node )
-{
-    ST_MSG_t *p_node_match;
-    
-    if( p_msg_list_head == NULL || p_msg_list_tail == NULL )
-    {
-        return NULL;
-    }
-    
-    //find the timer at the tail
-    p_node_match = p_msg_list_head;
-    while( p_node != p_node_match )
-    {
-        p_node_match = p_node_match->p_node_next;
-        if( p_node_match == NULL )
-            return NULL;
-    }
-    
-    return p_node_match;
-}
 
-static void st_msg_list_del( ST_MSG_t *p_node )
-{
-    ST_ASSERT( p_msg_list_head != NULL && p_msg_list_tail != NULL );
-    
-    if( p_node->p_node_prev == NULL &&
-        p_node->p_node_next == NULL )
-    {
-        p_msg_list_head = NULL;
-        p_msg_list_tail = NULL;
-    }
-    else
-    {
-        if( p_node->p_node_prev != NULL )
-        {
-            p_node->p_node_prev->p_node_next = p_node->p_node_next;
-            if( p_node->p_node_prev->p_node_next == NULL )
-            {
-                p_msg_list_tail = p_node->p_node_prev;
-            }
-        }
-
-        if( p_node->p_node_next != NULL )
-        {
-            p_node->p_node_next->p_node_prev = p_node->p_node_prev;
-            if( p_node->p_node_next->p_node_prev == NULL )
-            {
-                p_msg_list_head = p_node->p_node_next;
-            }
-        }
-    }
-}
-
-static void st_msg_list_add( ST_MSG_t *p_node_new )
-{
-    p_node_new->p_node_next = NULL;
-    if( p_msg_list_tail )
-    {
-        ST_ASSERT( p_msg_list_head != NULL );
-        //append the new timer to the tail
-        p_node_new->p_node_prev = p_msg_list_tail;
-        p_msg_list_tail->p_node_next = p_node_new;
-        p_msg_list_tail = p_node_new;
-    }
-    else
-    {
-        ST_ASSERT( p_msg_list_head == NULL );
-        p_node_new->p_node_prev = NULL;
-        p_msg_list_head = p_node_new;
-        p_msg_list_tail = p_node_new;
-    }
-}
 
 #endif //ST_MSG_EN
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

@@ -30,3 +30,4 @@ void exported_function(char *file, st_uint32_t line);
 
 #endif //__TEMPLATE_H__
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+

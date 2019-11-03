@@ -52,10 +52,16 @@ extern "C" {
 #define INT32_MAX   0x7FFFFFF
 #endif
 
-#ifdef ST_MSG_EN
-#define ST_TASK_EVENT_MSG             0
-#endif
+#define ST_ERR_NONE         0
+#define ST_ERR_GENERIC      1
+#define ST_ERR_INVAL        2
+#define ST_ERR_NOMEM        3
+#define ST_ERR_FULL         4
+#define ST_ERR_EMPTY        5
+#define ST_ERR_BUSY         6
+#define ST_ERR_IO           7
 
+#define ST_TASK_EVT_ALL     0xFFFFFFFF
 /* Exported typedef -----------------------------------------------------------*/
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/

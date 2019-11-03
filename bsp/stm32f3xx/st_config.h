@@ -20,32 +20,33 @@
 #define ST_TIMER_EN
 #define ST_TIMER_USE_HEAP
 #define ST_TIMER_MAX          8             // meaningless if ST_TIMER_STATIC_EN == 0
-#define ST_TIMER_TIMEOUT_MAX  UINT32_MAX    // should be UINT8_MAX or UINT16_MAX or UINT32_MAX
 #define ST_MEM_EN
 
 #define ST_TASK_MAX           4
-#define ST_EVENT_MAX          32            // must be 8, 16 or 32
-#define ST_TASK_NAME_EN                     // use task name or not
-
 /*******************************************************************************
  * Single-Thread HAL Drivers
  ******************************************************************************/
 #define ST_USING_HAL_PIN
 #define ST_USING_HAL_UART
+#ifdef  ST_USING_HAL_UART
+#define TASK_ID_HAL_UART_RXD    0
+#define TASK_ID_HAL_UART_TXD    1
+#endif
 
 /*******************************************************************************
  * Single-Thread Components - Task IDs
  ******************************************************************************/
-#define TASK_ID_DRIVERS         0
-#define TASK_ID_LED             1
-#define TASK_ID_DEMO            2
-#define TASK_ID_CLI             3
+//#define TASK_ID_DRIVERS         0
+//#define TASK_ID_LED             1
+//#define TASK_ID_DEMO            2
+//#define TASK_ID_CLI             3
 
 /*******************************************************************************
  * Single-Thread Components - LED
  ******************************************************************************/
 #define ST_USING_LED
 #ifdef  ST_USING_LED
+#define TASK_ID_LED             3
 #define LED_0_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 6 )
 #define LED_1_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 9 )
 #define LED_2_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 10 )
@@ -71,6 +72,7 @@
  ******************************************************************************/
 #define ST_USING_CLI
 #ifdef  ST_USING_CLI
+#define TASK_ID_CLI             2
 #define CLI_UART_PORT           HAL_UART_PORT_1
 #define CLI_MAX_CMD_LENGTH      128
 #endif

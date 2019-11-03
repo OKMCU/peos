@@ -53,7 +53,6 @@ extern "C" {
 
 #ifdef ST_MEM_EN
 #include "umm_malloc/umm_malloc.h"
-#define st_mem_init()                 umm_init()
 #define st_mem_alloc(size)            umm_malloc(size)
 #define st_mem_calloc(num, size)      umm_calloc(num, size)
 #define st_mem_realloc(ptr, size)     umm_realloc(ptr, size)
@@ -62,40 +61,31 @@ extern "C" {
 
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-void st_task_set_event( st_uint8_t task_id, st_uint8_t event_id );
-void st_task_clr_event( st_uint8_t task_id, st_uint8_t event_id );
+st_err_t st_task_create( st_uint8_t task_id, st_uint32_t (*ptask)( void*, st_uint32_t ) );
+st_err_t st_task_delete( st_uint8_t task_id );
+st_err_t st_task_set_event( st_uint8_t task_id, st_uint32_t event );
+st_err_t st_task_clr_event( st_uint8_t task_id, st_uint32_t event );
 st_uint8_t st_get_task_id_self( void );
-st_uint8_t st_get_task_id_by_handler( void(* p_task_handler)(st_uint8_t event_id) );
-#ifdef ST_TASK_NAME_EN
-st_uint8_t st_get_task_id_by_name( const char * p_name );
-#endif
 
 #ifdef ST_MSG_EN
-void st_msg_init( void );
-void *st_msg_create( st_uint16_t len );
-void st_msg_delete( void *p_msg );
-void st_msg_send( void *p_msg, st_uint8_t task_id );
-void st_msg_fwrd( void *p_msg, st_uint8_t task_id );
-void *st_msg_recv( st_uint8_t task_id );
-st_uint16_t st_msg_len( void *p_msg );
-st_uint8_t st_msg_get_type( void *p_msg );
-void st_msg_set_type( void *p_msg, st_uint8_t type );
+void *st_msg_create( st_uint16_t len, st_uint8_t type, st_err_t *err );
+st_err_t st_msg_send( void *pmsg, st_uint8_t task_id );
+st_err_t st_msg_send_urgent ( void *pmsg, st_uint8_t task_id );
+st_uint16_t st_msg_len( void *pmsg );
+st_uint8_t st_msg_type( void *pmsg );
+st_uint8_t st_msg_from( void *pmsg );
 #endif
 
 #ifdef ST_CLOCK_EN
-void st_clock_init( void );
-st_uint8_t st_clock_update( void );
 void st_clock_get( ST_CLOCK_t * clock );
 void st_clock_set( const ST_CLOCK_t *clock );
 #endif
 
 #ifdef ST_TIMER_EN
-void st_timer_init( void );
-void st_timer_create( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms );
-void st_timer_update( st_uint8_t task_id, st_uint8_t event_id, st_timer_timeout_t timeout_ms );
-void st_timer_delete( st_uint8_t task_id, st_uint8_t event_id );
-st_timer_timeout_t st_timer_query( st_uint8_t task_id, st_uint8_t event_id );
-void st_timer_process( st_uint8_t delta_systick );
+st_err_t st_timer_create( st_uint8_t task_id, st_uint32_t event, st_uint32_t tick );
+st_err_t st_timer_update( st_uint8_t task_id, st_uint32_t event, st_uint32_t tick );
+st_err_t st_timer_delete( st_uint8_t task_id, st_uint32_t event );
+st_uint32_t st_timer_query( st_uint8_t task_id, st_uint32_t event );
 #endif
 
 #ifdef __cplusplus

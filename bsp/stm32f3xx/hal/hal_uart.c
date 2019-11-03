@@ -25,6 +25,16 @@
 #define UART1_RX_CACHE_SIZE         8
 #define UART1_TX_CACHE_SIZE         8
 
+#define TASK_EVT_UART0_RXD          BV(0)
+#define TASK_EVT_UART1_RXD          BV(1)
+#define TASK_EVT_UART0_PERR         BV(2)
+#define TASK_EVT_UART1_PERR         BV(3)
+#define TASK_EVT_UART0_OVF          BV(4)
+#define TASK_EVT_UART1_OVF          BV(5)
+
+#define TASK_EVT_UART0_TXD          BV(0)
+#define TASK_EVT_UART1_TXD          BV(1)
+
 /* Private typedef -----------------------------------------------------------*/
 typedef struct {
     st_uint8_t *rx_cache;
@@ -99,6 +109,9 @@ static uart_event_t const uart_event[HAL_UART_PORT_MAX] = {
 static uart_ctrl_t uart_ctrl[HAL_UART_PORT_MAX] = { 0 };
 
 /* Private function prototypes -----------------------------------------------*/
+static st_uint32_t hal_uart_driver_task_rxd( void *pmsg, st_uint32_t event );
+static st_uint32_t hal_uart_driver_task_txd( void *pmsg, st_uint32_t event );
+
 extern void hal_uart_driver_event_txd( st_uint8_t port );
 extern void hal_uart_driver_event_rxd( st_uint8_t port );
 extern void hal_uart_driver_event_ovf( st_uint8_t port );
@@ -117,10 +130,16 @@ extern void USART2_IRQHandler( void );
   * @note   None
   * @retval None
   */
-void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
+st_err_t hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
 {
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
-    ST_ASSERT( cfg != NULL );
+    if( port >= HAL_UART_PORT_MAX || cfg == NULL ) 
+        return ST_ERR_INVAL;
+    
+    if( st_task_create(TASK_ID_HAL_UART_RXD, hal_uart_driver_task_rxd) )
+        return ST_ERR_BUSY;
+    
+    if( st_task_create(TASK_ID_HAL_UART_TXD, hal_uart_driver_task_txd) )
+        return ST_ERR_BUSY;
     
     // reset peripherals firstly
     switch ( port )
@@ -226,6 +245,8 @@ void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
     LL_USART_EnableDirectionTx( USARTx[port] );
     LL_USART_EnableIT_RXNE( USARTx[port] );
     LL_USART_Enable( USARTx[port] );
+
+    return ST_ERR_NONE;
 }
 
 /**
@@ -235,9 +256,10 @@ void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
   * @note   None
   * @retval None
   */
-void hal_uart_putc( st_uint8_t port, st_uint8_t byte )
+st_err_t hal_uart_putc( st_uint8_t port, st_uint8_t byte )
 {
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    if( port >= HAL_UART_PORT_MAX )
+        return ST_ERR_INVAL;
 
     while( RING_BUF_FULL(uart_ctrl[port].tx_head, 
                          uart_ctrl[port].tx_tail, 
@@ -256,6 +278,8 @@ void hal_uart_putc( st_uint8_t port, st_uint8_t byte )
         LL_USART_TransmitData8( USARTx[port], byte );
     }
     LL_USART_EnableIT_TXE( USARTx[port] );
+
+    return ST_ERR_NONE;
 }
 
 /**
@@ -269,7 +293,8 @@ st_uint8_t hal_uart_getc( st_uint8_t port )
 {
     st_uint8_t byte;
     
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    if( port >= HAL_UART_PORT_MAX )
+        return 0;
 
     while( RING_BUF_EMPTY(uart_ctrl[port].rx_head, 
                           uart_ctrl[port].rx_tail) );
@@ -286,7 +311,9 @@ st_uint8_t hal_uart_getc( st_uint8_t port )
 
 st_uint8_t hal_uart_tx_buf_free( st_uint8_t port )
 {
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    if( port >= HAL_UART_PORT_MAX )
+        return 0;
+    
     return RING_BUF_FREE_SIZE( uart_ctrl[port].tx_head, 
                                uart_ctrl[port].tx_tail, 
                                uart_cache[port].tx_cache_size );
@@ -294,7 +321,9 @@ st_uint8_t hal_uart_tx_buf_free( st_uint8_t port )
 
 st_uint8_t hal_uart_rx_buf_used( st_uint8_t port )
 {
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    if( port >= HAL_UART_PORT_MAX )
+        return 0;
+    
     return RING_BUF_USED_SIZE( uart_ctrl[port].rx_head, 
                                uart_ctrl[port].rx_tail, 
                                uart_cache[port].rx_cache_size );
@@ -307,13 +336,20 @@ st_uint8_t hal_uart_rx_buf_used( st_uint8_t port )
   * @note   None
   * @retval None
   */
-void hal_uart_close( st_uint8_t port )
+st_err_t hal_uart_close( st_uint8_t port )
 {
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
-
+    if( port >= HAL_UART_PORT_MAX )
+        return ST_ERR_INVAL;
+    
     LL_USART_DisableDirectionRx( USARTx[port] );
     LL_USART_DisableIT_RXNE( USARTx[port] );
     LL_USART_Disable( USARTx[port] );
+
+    if( st_task_clr_event(TASK_ID_HAL_UART_RXD, ST_TASK_EVT_ALL) )
+        return ST_ERR_GENERIC;
+    
+    if( st_task_clr_event(TASK_ID_HAL_UART_TXD, ST_TASK_EVT_ALL) )
+        return ST_ERR_GENERIC;
 
     switch ( port )
     {
@@ -335,6 +371,8 @@ void hal_uart_close( st_uint8_t port )
             LL_APB1_GRP1_DisableClock( LL_APB1_GRP1_PERIPH_USART2 );
         break;
     }
+
+    return ST_ERR_NONE;
 }
 
 /* Private function implementations ------------------------------------------*/
@@ -345,6 +383,64 @@ void hal_uart_close( st_uint8_t port )
   * @note   None
   * @retval None
   */
+static st_uint32_t hal_uart_driver_task_rxd( void *pmsg, st_uint32_t event )
+{
+    (void)pmsg;
+
+    if( event & TASK_EVT_UART0_RXD )
+    {
+        
+        return TASK_EVT_UART0_RXD;
+    }
+
+    if( event & TASK_EVT_UART1_RXD )
+    {
+
+        return TASK_EVT_UART1_RXD;
+    }
+
+    if( event & TASK_EVT_UART0_PERR )
+    {
+
+        return TASK_EVT_UART0_PERR;
+    }
+
+    if( event & TASK_EVT_UART1_PERR )
+    {
+
+        return TASK_EVT_UART1_PERR;
+    }
+
+    if( event & TASK_EVT_UART0_OVF )
+    {
+        return TASK_EVT_UART0_OVF;
+    }
+
+    if( event & TASK_EVT_UART1_OVF )
+    {
+        return TASK_EVT_UART1_OVF;
+    }
+
+    return ST_TASK_EVT_ALL;
+}
+
+static st_uint32_t hal_uart_driver_task_txd( void *pmsg, st_uint32_t event )
+{
+    (void)pmsg;
+
+    if( event & TASK_EVT_UART0_TXD )
+    {
+        return TASK_EVT_UART0_TXD;
+    }
+
+    if( event & TASK_EVT_UART1_TXD )
+    {
+        return TASK_EVT_UART1_TXD;
+    }
+
+    return ST_TASK_EVT_ALL;
+}
+
 void hal_uart_driver_event_txd( st_uint8_t port )
 {
     if( uart_ctrl[port].callback )

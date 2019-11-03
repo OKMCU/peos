@@ -14,35 +14,37 @@
 #include "st.h"
 
 /* Exported variables --------------------------------------------------------*/
-#if ( ST_EVENT_MAX == 32 )
-st_uint32_t st_task_event_list[ ST_TASK_MAX ];
-#elif ( ST_EVENT_MAX == 16 )
-st_uint16_t st_task_event_list[ ST_TASK_MAX ];
-#elif ( ST_EVENT_MAX == 8 )
-st_uint8_t  st_task_event_list[ ST_TASK_MAX ];
-#else
-#error "ST_EVENT_MAX must be 8, 16 or 32"
-#endif
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
+
 /* Private variables ---------------------------------------------------------*/
-#if (ST_EVENT_MAX == 32)
-static st_uint32_t event;
-#elif (ST_EVENT_MAX == 16)
-static st_uint16_t event;
-#elif (ST_EVENT_MAX == 8)
-static st_uint8_t  event;
-#else
-#error "ST_EVENT_MAX must be 8, 16 or 32"
-#endif
-static st_uint8_t event_id;
+static st_uint32_t curr_event;
+static st_uint32_t proc_event;
+static st_uint32_t diff_event;
+static st_uint32_t set_event;
+static st_uint32_t clr_event;
+static void *pmsg;
 static st_uint8_t task_id;
-extern __FLASH ST_TASK_t st_task_list[ST_TASK_MAX];
+ST_TCB_t st_task_list[ST_TASK_MAX];
 
 /* Private function prototypes -----------------------------------------------*/
-static void st_sys_init ( void );
+#ifdef ST_MEM_EN
+#define __st_mem_init()     umm_init()
+#endif
+#ifdef ST_CLOCK_EN
+extern void __st_clock_init( void );
+extern st_uint8_t __st_clock_update( void );
+#endif
+#ifdef ST_TIMER_EN
+extern void __st_timer_init( void );
+extern void __st_timer_process( st_uint8_t delta_systick );
+#endif
+#ifdef ST_MSG_EN
+extern void *__st_msg_recv( st_uint8_t task_id );
+extern void __st_msg_delete ( void *pmsg );
+#endif
 
 /* Exported function implementations -----------------------------------------*/
 st_uint8_t st_get_task_id_self( void )
@@ -50,101 +52,84 @@ st_uint8_t st_get_task_id_self( void )
     return task_id;
 }
 
-st_uint8_t st_get_task_id_by_handler( void (*p_task_handler)( st_uint8_t event_id ) )
-{
-    st_uint8_t i;
-
-    ST_ASSERT( p_task_handler != NULL );
-    
-    for( i = 0; i < ST_TASK_MAX; i++ )
-    {
-        if( p_task_handler == st_task_list[i].p_task_handler )
-            break;
-    }
-
-    return i;
-}
-
-
-#ifdef ST_TASK_NAME_EN
-st_uint8_t st_get_task_id_by_name( const char *p_name )
-{
-    st_uint8_t i;
-
-    ST_ASSERT( p_name != NULL );
-    
-    for( i = 0; i < ST_TASK_MAX; i++ )
-    {
-        if( st_strcmp(p_name, st_task_list[i].p_task_name) == 0 )
-            break;
-    }
-
-    return i;
-}
-#endif
-
 int main( void )
 {
     /* Disable Interrupts */
     ST_ENTER_CRITICAL();
     
-    /* Initialize mcu and peripherals */
-    st_hal_init();
-    
     /* Initialize the OS's vars */
-    st_sys_init();
+    st_memset( st_task_list, 0, sizeof(st_task_list) );
+    
+#ifdef ST_MEM_EN
+    __st_mem_init();
+#endif /* (ST_MEM_EN > 0) */
+
+#ifdef ST_CLOCK_EN
+    __st_clock_init();
+#endif
+
+#ifdef ST_TIMER_EN
+    __st_timer_init();
+#endif /* (ST_TIMER_EN > 0) */
 
     /* Enable Interrupts */
     ST_EXIT_CRITICAL();
 
-    for( task_id = 0; task_id < ST_TASK_MAX; task_id++ )
-    {
-        if( st_task_list[task_id].p_task_init != NULL )
-            st_task_list[task_id].p_task_init();
-    }
+    /* Power on reset hook */
+    st_por_hook();
     
-    /* Start OSAL */
+    /* Start Single-Thread task scheduler */
     for(;;)
     {
 #ifdef ST_CLOCK_EN
 #ifdef ST_TIMER_EN
-        st_timer_process( st_clock_update() );
+        __st_timer_process( __st_clock_update() );
 #else
-        st_clock_update();
+        __st_clock_update();
 #endif // (ST_TIMER_EN > 0)
 #endif // (ST_CLOCK_EN > 0)
         
         for( task_id = 0; task_id < ST_TASK_MAX; task_id++ )
         {
+#ifdef ST_MSG_EN
+            pmsg = __st_msg_recv( task_id );
+            if( pmsg )
+            {
+                if( st_task_list[task_id].p_task_handler )
+                {
+                    st_task_list[task_id].p_task_handler( pmsg, 0x00000000 );
+                    break;
+                }
+                __st_msg_delete( pmsg );
+            }
+#endif
+            
             ST_ENTER_CRITICAL();
-            event = st_task_event_list[task_id];
+            curr_event = st_task_list[task_id].event;
             ST_EXIT_CRITICAL();
             
-            if( event )
+            if( curr_event )
             {
-                for( event_id = 0; event_id < ST_EVENT_MAX; event_id++ )
+                if( st_task_list[task_id].p_task_handler )
                 {
-                    if( event & BV( event_id ) )
-                    {
-                        break;
-                    }
-                }
-
-                event = BV( event_id );
-                
-                ST_ENTER_CRITICAL();
-                if( st_task_event_list[task_id] & event )
-                {
-                    st_task_event_list[task_id] &= ~event;
+                    proc_event = st_task_list[task_id].p_task_handler( NULL, curr_event );
+                    ST_ENTER_CRITICAL();
+                    diff_event  =  curr_event ^ st_task_list[task_id].event;
+                    set_event   =  diff_event & st_task_list[task_id].event;
+                    clr_event   =  diff_event & (~st_task_list[task_id].event);
+                    curr_event &= ~proc_event;
+                    curr_event &= ~clr_event;
+                    curr_event |=  set_event;
+                    st_task_list[task_id].event = curr_event;
                     ST_EXIT_CRITICAL();
-                    ST_ASSERT( st_task_list[task_id].p_task_handler != NULL );
-                    st_task_list[task_id].p_task_handler( event_id );
+                    break;
                 }
                 else
                 {
+                    ST_ENTER_CRITICAL();
+                    st_task_list[task_id].event = 0;
                     ST_EXIT_CRITICAL();
                 }
-                break;
             }
         }
 
@@ -157,25 +142,5 @@ int main( void )
 }
 
 /* Private function implementations ------------------------------------------*/
-static void st_sys_init ( void )
-{
-    st_memset( st_task_event_list, 0, sizeof(st_task_event_list) );
-    
-#ifdef ST_MEM_EN
-    st_mem_init();
-#endif /* (ST_MEM_EN > 0) */
-
-#ifdef ST_CLOCK_EN
-    st_clock_init();
-#endif
-
-#ifdef ST_TIMER_EN
-    st_timer_init();
-#endif /* (ST_TIMER_EN > 0) */
-
-#ifdef ST_MSG_EN
-    st_msg_init();
-#endif /* ( ST_MSG_EN > 0 ) */
-}
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

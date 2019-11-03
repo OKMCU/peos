@@ -86,7 +86,7 @@ void SysTick_Handler(void)
 }
 #endif // (ST_TIMER_EN > 0)
 
-void st_hal_init( void )
+void st_por_hook( void )
 {
     SystemClock_Config();
     

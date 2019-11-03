@@ -17,62 +17,76 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern __FLASH ST_TASK_t st_task_list[ ST_TASK_MAX ];
-#if ( ST_EVENT_MAX == 32 )
-extern st_uint32_t st_task_event_list[ST_TASK_MAX];
-#elif ( ST_EVENT_MAX == 16 )
-extern st_uint16_t st_task_event_list[ST_TASK_MAX];
-#elif ( ST_EVENT_MAX == 8 )
-extern st_uint8_t  st_task_event_list[ST_TASK_MAX];
-#else
-#error "ST_EVENT_MAX must be 8, 16 or 32"
-#endif
-
+extern ST_TCB_t st_task_list[ST_TASK_MAX];
 /* Private function prototypes -----------------------------------------------*/
 /* Exported function implementations -----------------------------------------*/
-void st_task_set_event   ( st_uint8_t task_id, st_uint8_t event_id )
+st_err_t st_task_set_event   ( st_uint8_t task_id, st_uint32_t event )
 {
-#if (ST_EVENT_MAX == 32)
-    st_uint32_t event;
-#elif (ST_EVENT_MAX == 16)
-    st_uint16_t event;
-#elif (ST_EVENT_MAX == 8)
-    st_uint8_t  event;
-#else
-#error "ST_EVENT_MAX must be 8, 16 or 32"
-#endif
-    
-    ST_ASSERT( task_id < ST_TASK_MAX );
-    ST_ASSERT( event_id < ST_EVENT_MAX );
-    
-    event = ( 1 << event_id );
-    
-    ST_ENTER_CRITICAL();
-    st_task_event_list[task_id] |= event;
-    ST_EXIT_CRITICAL();
+    if( task_id < ST_TASK_MAX )
+    {
+        ST_ENTER_CRITICAL();
+        st_task_list[task_id].event |= event;
+        ST_EXIT_CRITICAL();
+        return ST_ERR_NONE;
+    }
+    return ST_ERR_INVAL;
 }
 
-void st_task_clr_event   ( st_uint8_t task_id, st_uint8_t event_id )
+st_err_t st_task_clr_event   ( st_uint8_t task_id, st_uint32_t event )
 {
-#if (ST_EVENT_MAX == 32)
-    st_uint32_t event;
-#elif (ST_EVENT_MAX == 16)
-    st_uint16_t event;
-#elif (ST_EVENT_MAX == 8)
-    st_uint8_t  event;
-#else
-#error "ST_EVENT_MAX must be 8, 16 or 32"
-#endif
-    
-    ST_ASSERT( task_id < ST_TASK_MAX );
-    ST_ASSERT( event_id < ST_EVENT_MAX );
-    
-    event = ( 1 << event_id );
-    event = ~event;
+    if( task_id < ST_TASK_MAX )
+    {
+        event = ~event;
+        ST_ENTER_CRITICAL();
+        st_task_list[task_id].event &= event;
+        ST_EXIT_CRITICAL();
+        return ST_ERR_NONE;
+    }
+    return ST_ERR_INVAL;
+}
+
+st_err_t st_task_create( st_uint8_t task_id, st_uint32_t (*ptask)( void*, st_uint32_t ) )
+{
+    if( task_id >= ST_TASK_MAX || ptask == NULL )
+        return ST_ERR_INVAL;
     
     ST_ENTER_CRITICAL();
-    st_task_event_list[task_id] &= event;
+    if( st_task_list[task_id].p_task_handler )
+    {
+        ST_EXIT_CRITICAL();
+        return ST_ERR_GENERIC;
+    }
+    st_task_list[task_id].p_task_handler = ptask;
     ST_EXIT_CRITICAL();
+    
+    return ST_ERR_NONE;
+}
+
+st_err_t st_task_delete( st_uint8_t task_id )
+{
+    if( task_id >= ST_TASK_MAX )
+        return ST_ERR_INVAL;
+
+    ST_ENTER_CRITICAL();
+    if( st_task_list[task_id].p_task_handler == NULL )
+    {
+        ST_EXIT_CRITICAL();
+        return ST_ERR_GENERIC;
+    }
+    if( st_task_list[task_id].event
+#ifdef ST_MSG_EN
+     || st_task_list[task_id].phead
+     || st_task_list[task_id].ptail
+#endif 
+      )
+    {
+        ST_EXIT_CRITICAL();
+        return ST_ERR_BUSY;
+    }
+
+    st_task_list[task_id].p_task_handler = NULL;
+    ST_EXIT_CRITICAL();
+    return ST_ERR_NONE;
 }
 
 /* Private function implementations ------------------------------------------*/
