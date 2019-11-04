@@ -15,6 +15,7 @@
  * Single-Thread Kernel
  ******************************************************************************/
 #define ST_ASSERT_EN
+#define ST_ARGCHK_EN                        // Enable arguments check
 #define ST_MSG_EN
 #define ST_CLOCK_EN
 #define ST_TIMER_EN
@@ -22,7 +23,8 @@
 #define ST_TIMER_MAX          8             // meaningless if ST_TIMER_STATIC_EN == 0
 #define ST_MEM_EN
 
-#define ST_TASK_MAX           4
+#define ST_TASK_MAX           10
+#define ST_TASK_EVENT_MAX     32            // should be 8, 16 or 32
 /*******************************************************************************
  * Single-Thread HAL Drivers
  ******************************************************************************/

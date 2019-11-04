@@ -5,17 +5,6 @@
 
 #include "st.h"
 
-
-
-#define CPU_SYSCLK                          (64000000uL)
-#define CPU_HCLK                            (64000000uL)
-#define CPU_AHBCLK                          (64000000uL)
-#define CPU_APB1CLK                         (32000000uL)
-#define CPU_APB2CLK                         (64000000uL)
-
-void drivers_init( void );
-void drivers_task( st_uint8_t event_id );
-
 #ifdef ST_USING_HAL_PIN
 #include "hal_pin.h"
 #endif //ST_USE_HAL_PIN

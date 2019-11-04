@@ -1000,9 +1000,6 @@
   <group>
     <name>hal</name>
     <file>
-      <name>$PROJ_DIR$\..\hal\hal_drivers.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\hal\hal_pin.c</name>
     </file>
     <file>

@@ -54,7 +54,7 @@ void *st_msg_create ( st_uint16_t len, st_uint8_t type, st_err_t *err )
     return pmsg;
 }
 
-void __st_msg_delete ( void *pmsg )
+void st_msg_delete ( void *pmsg )
 {
     st_mem_free( (st_uint8_t *)pmsg - sizeof(ST_MSG_t) );
 }
@@ -65,12 +65,15 @@ st_err_t st_msg_send ( void *pmsg, st_uint8_t task_id )
 
     if( task_id < ST_TASK_MAX )
     {
+        if( st_task_list[task_id].p_task_handler == NULL )
+            return ST_ERR_GENERIC;
+        
         pnode = (ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t));
         pnode->from_task_id = st_get_task_id_self();
 
         if( st_task_list[task_id].ptail )
         {
-            st_task_list[task_id].ptail->p_msg_next = pnode;
+            st_task_list[task_id].ptail->next = pnode;
         }
         else
         {
@@ -89,12 +92,15 @@ st_err_t st_msg_send_urgent ( void *pmsg, st_uint8_t task_id )
 
     if( task_id < ST_TASK_MAX )
     {
+        if( st_task_list[task_id].p_task_handler == NULL )
+            return ST_ERR_GENERIC;
+        
         pnode = (ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t));
         pnode->from_task_id = st_get_task_id_self();
 
         if( st_task_list[task_id].phead )
         {
-            pnode->p_msg_next = st_task_list[task_id].phead;
+            pnode->next = st_task_list[task_id].phead;
         }
         else
         {
@@ -107,20 +113,22 @@ st_err_t st_msg_send_urgent ( void *pmsg, st_uint8_t task_id )
 }
 
 
-void *__st_msg_recv( st_uint8_t task_id )
+void *st_msg_recv( st_uint8_t task_id )
 {
     void *pmsg = NULL;
-    
-    if( st_task_list[task_id].phead != NULL )
+
+    if( task_id < ST_TASK_MAX )
     {
-        pmsg = (void *)((st_uint8_t *)st_task_list[task_id].phead + sizeof(ST_MSG_t));
-        st_task_list[task_id].phead = st_task_list[task_id].phead->p_msg_next;
-        if( st_task_list[task_id].phead == NULL )
+        if( st_task_list[task_id].phead != NULL )
         {
-            st_task_list[task_id].ptail = NULL;
+            pmsg = (void *)((st_uint8_t *)st_task_list[task_id].phead + sizeof(ST_MSG_t));
+            st_task_list[task_id].phead = st_task_list[task_id].phead->next;
+            if( st_task_list[task_id].phead == NULL )
+            {
+                st_task_list[task_id].ptail = NULL;
+            }
         }
     }
-    
     return pmsg;
 }
 

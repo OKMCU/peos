@@ -36,7 +36,7 @@
 #include "stm32f3xx_ll_wwdg.h"
 
 #include "st.h"
-
+#include "application/demo.h"
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -103,7 +103,6 @@ void st_por_hook( void )
     LL_AHB1_GRP1_EnableClock( LL_AHB1_GRP1_PERIPH_GPIOE );
     LL_AHB1_GRP1_EnableClock( LL_AHB1_GRP1_PERIPH_GPIOF );
     
-
     //NVIC_SetPriority(I2C1_EV_IRQn, 0);
     //NVIC_SetPriority(I2C1_ER_IRQn, 1);
     //NVIC_SetPriority(ADC1_2_IRQn,  2);
@@ -111,6 +110,9 @@ void st_por_hook( void )
     //NVIC_SetPriority(EXTI1_IRQn,   4);
     //NVIC_SetPriority(EXTI0_IRQn,   5);
     //NVIC_SetPriority(EXTI15_10_IRQn,6);
+
+    st_task_create( TASK_ID_DEMO, demo_task );
+    st_task_set_event( TASK_ID_DEMO, DEMO_TASK_EVT_PWR_ON_INIT );
 }
 
 /* Private function implementations ------------------------------------------*/

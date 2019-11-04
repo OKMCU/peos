@@ -47,6 +47,7 @@ static HalLedStatus_t HalLedStatusControl;
 /* Private function prototypes -----------------------------------------------*/
 static void led_on_off ( st_uint8_t leds, st_uint8_t mode );
 static void led_task_update ( void );
+static void led_task( st_int8_t event_id );
 
 /* Exported function implementations -----------------------------------------*/
 /***************************************************************************************************
@@ -102,15 +103,10 @@ void led_init (void)
 #endif
 
 #if ( LED_BLINK_EN > 0 )
-  HalLedStatusControl.sleepActive = FALSE;          // Initialize sleepActive to FALSE.
+    HalLedStatusControl.sleepActive = FALSE;          // Initialize sleepActive to FALSE.
 #endif
-}
 
-
-void led_task( st_uint8_t event_id )
-{
-    ST_ASSERT( event_id == LED_TASK_EVT_UPDATE );
-    led_task_update();
+    st_task_create( TASK_ID_LED, led_task );
 }
 
 /***************************************************************************************************
@@ -306,6 +302,14 @@ void led_exit_sleep( void )
 #endif /* BLINK_LEDS */
 }
 
+void led_deinit( void )
+{
+    led_set( LED_ALL, LED_MODE_OFF );
+    st_timer_delete( TASK_ID_LED, LED_TASK_EVT_UPDATE );
+    st_task_clr_event ( TASK_ID_LED, LED_TASK_EVT_UPDATE );
+    st_task_delete( TASK_ID_LED );
+}
+
 /* Private function implementations ------------------------------------------*/
 /***************************************************************************************************
  * @fn      led_on_off
@@ -490,6 +494,16 @@ static void led_task_update (void)
       st_timer_create( TASK_ID_LED, LED_TASK_EVT_UPDATE, next );/* Schedule event */
     }
   }
+}
+
+static void led_task( st_int8_t event_id )
+{
+    switch ( event_id )
+    {
+        case LED_TASK_EVT_UPDATE:
+            led_task_update();
+        break;
+    }
 }
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

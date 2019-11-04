@@ -8,6 +8,7 @@ static void *tx_fifo;
 static char *rx_buff;
 static cli_cmd_t *cmd;
 //#define IS_CHAR(x)  ( x > 0 && x <= 127 )
+static void cli_task( st_int8_t event_id );
 
 static void cli_uart_driver_callback( st_uint8_t event )
 {
@@ -21,14 +22,16 @@ static void cli_uart_driver_callback( st_uint8_t event )
             size = hal_uart_rx_buf_used(CLI_UART_PORT);
             if( size )
             {
-                p_msg = (char *)st_msg_create(size);
-                ST_ASSERT( p_msg != NULL );
-                
-                for( i = 0; i < size; i++ )
+                p_msg = (char *)st_msg_create(size, 0, NULL);
+
+                if( p_msg )
                 {
-                    p_msg[i] = hal_uart_getc(CLI_UART_PORT);
+                    for( i = 0; i < size; i++ )
+                    {
+                        p_msg[i] = hal_uart_getc(CLI_UART_PORT);
+                    }
+                    st_msg_send( p_msg, TASK_ID_CLI );
                 }
-                st_msg_send( p_msg, TASK_ID_CLI );
             }
         break;
 
@@ -76,24 +79,8 @@ void cli_init( void )
     cfg.invert    = HAL_UART_NRZ_NORMAL;
     cfg.callback  = cli_uart_driver_callback;
 
+    st_task_create( TASK_ID_CLI, cli_task );
     hal_uart_open( CLI_UART_PORT, &cfg );
-}
-
-void cli_task( st_uint8_t event )
-{
-    st_uint16_t len, i;
-    char *p_msg;
-    ST_ASSERT( event == ST_TASK_EVENT_MSG );
-    
-    p_msg = st_msg_recv( st_get_task_id_self() );
-    ST_ASSERT( p_msg != NULL );
-    len = st_msg_len( p_msg );
-    i = 0;
-    while( len-- )
-    {
-        cli_print_char( p_msg[i++] );
-    }
-    st_msg_delete( p_msg );
 }
 
 void cli_register_cmds( const cli_cmd_t *cmd )
@@ -133,6 +120,15 @@ void cli_print_str(const char *s)
         cli_print_char(*s++);
     }
 }
+
+void cli_deinit( void )
+{
+    tx_fifo = NULL;
+    rx_buff = NULL;
+    hal_uart_close( CLI_UART_PORT );
+    st_task_delete( TASK_ID_CLI );
+}
+
 
 #if 0
 extern void hal_cli_print_sint(int32_t num)
@@ -207,4 +203,28 @@ extern void hal_cli_print_hex32(uint32_t num)
     }
 }
 #endif
+
+
+static void cli_task( st_int8_t event_id )
+{
+    st_uint16_t len, i;
+    char *p_msg;
+    switch ( event_id )
+    {
+        case ST_TASK_EVT_MSG:
+            p_msg = st_msg_recv( st_get_task_id_self() );
+            if( p_msg != NULL )
+            {
+                len = st_msg_len( p_msg );
+                i = 0;
+                while( len-- )
+                {
+                    cli_print_char( p_msg[i++] );
+                }
+                st_msg_delete( p_msg );
+            }
+        break;
+    }
+}
+
 

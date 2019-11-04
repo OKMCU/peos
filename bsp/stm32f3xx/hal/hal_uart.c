@@ -25,15 +25,18 @@
 #define UART1_RX_CACHE_SIZE         8
 #define UART1_TX_CACHE_SIZE         8
 
-#define TASK_EVT_UART0_RXD          BV(0)
-#define TASK_EVT_UART1_RXD          BV(1)
-#define TASK_EVT_UART0_PERR         BV(2)
-#define TASK_EVT_UART1_PERR         BV(3)
-#define TASK_EVT_UART0_OVF          BV(4)
-#define TASK_EVT_UART1_OVF          BV(5)
+#define TASK_EVT_UART0_RXD          0
+#define TASK_EVT_UART1_RXD          1
+#define TASK_EVT_UART0_PERR         2
+#define TASK_EVT_UART1_PERR         3
+#define TASK_EVT_UART0_OVF          4
+#define TASK_EVT_UART1_OVF          5
 
-#define TASK_EVT_UART0_TXD          BV(0)
-#define TASK_EVT_UART1_TXD          BV(1)
+#define TASK_EVT_UART0_TXD          0
+#define TASK_EVT_UART1_TXD          1
+
+#define CPU_APB1CLK                 (32000000uL)
+#define CPU_APB2CLK                 (64000000uL)
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct {
@@ -92,30 +95,29 @@ static st_uint32_t const PeriphClk[HAL_UART_PORT_MAX] = {
 
 static uart_event_t const uart_event[HAL_UART_PORT_MAX] = {
     {
-        .rxd = TASK_EVT_DRIVERS_UART0_RXD,
-        .txd = TASK_EVT_DRIVERS_UART0_TXD,
-        .ovf = TASK_EVT_DRIVERS_UART0_OVF,
-        .perr = TASK_EVT_DRIVERS_UART0_PERR,
+        .rxd = TASK_EVT_UART0_RXD,
+        .txd = TASK_EVT_UART0_TXD,
+        .ovf = TASK_EVT_UART0_OVF,
+        .perr = TASK_EVT_UART0_PERR,
     },
 
     {
-        .rxd = TASK_EVT_DRIVERS_UART1_RXD,
-        .txd = TASK_EVT_DRIVERS_UART1_TXD,
-        .ovf = TASK_EVT_DRIVERS_UART1_OVF,
-        .perr = TASK_EVT_DRIVERS_UART1_PERR,
+        .rxd = TASK_EVT_UART1_RXD,
+        .txd = TASK_EVT_UART1_TXD,
+        .ovf = TASK_EVT_UART1_OVF,
+        .perr = TASK_EVT_UART1_PERR,
     },
 };
 
 static uart_ctrl_t uart_ctrl[HAL_UART_PORT_MAX] = { 0 };
 
 /* Private function prototypes -----------------------------------------------*/
-static st_uint32_t hal_uart_driver_task_rxd( void *pmsg, st_uint32_t event );
-static st_uint32_t hal_uart_driver_task_txd( void *pmsg, st_uint32_t event );
-
-extern void hal_uart_driver_event_txd( st_uint8_t port );
-extern void hal_uart_driver_event_rxd( st_uint8_t port );
-extern void hal_uart_driver_event_ovf( st_uint8_t port );
-extern void hal_uart_driver_event_perr( st_uint8_t port );
+static void hal_uart_driver_task_rxd( st_int8_t event_id );
+static void hal_uart_driver_task_txd( st_int8_t event_id );
+static void hal_uart_isr_event_txd( st_uint8_t port );
+static void hal_uart_isr_event_rxd( st_uint8_t port );
+static void hal_uart_isr_event_ovf( st_uint8_t port );
+static void hal_uart_isr_event_perr( st_uint8_t port );
 static void hal_uart_isr( st_uint8_t port );
 
 extern void USART1_IRQHandler( void );
@@ -132,14 +134,16 @@ extern void USART2_IRQHandler( void );
   */
 st_err_t hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
 {
+    st_err_t err;
+    
     if( port >= HAL_UART_PORT_MAX || cfg == NULL ) 
         return ST_ERR_INVAL;
     
-    if( st_task_create(TASK_ID_HAL_UART_RXD, hal_uart_driver_task_rxd) )
-        return ST_ERR_BUSY;
+    if( err = st_task_create(TASK_ID_HAL_UART_RXD, hal_uart_driver_task_rxd) )
+        return err;
     
-    if( st_task_create(TASK_ID_HAL_UART_TXD, hal_uart_driver_task_txd) )
-        return ST_ERR_BUSY;
+    if( err = st_task_create(TASK_ID_HAL_UART_TXD, hal_uart_driver_task_txd) )
+        return err;
     
     // reset peripherals firstly
     switch ( port )
@@ -338,18 +342,14 @@ st_uint8_t hal_uart_rx_buf_used( st_uint8_t port )
   */
 st_err_t hal_uart_close( st_uint8_t port )
 {
+    st_err_t err;
+    
     if( port >= HAL_UART_PORT_MAX )
         return ST_ERR_INVAL;
     
     LL_USART_DisableDirectionRx( USARTx[port] );
     LL_USART_DisableIT_RXNE( USARTx[port] );
     LL_USART_Disable( USARTx[port] );
-
-    if( st_task_clr_event(TASK_ID_HAL_UART_RXD, ST_TASK_EVT_ALL) )
-        return ST_ERR_GENERIC;
-    
-    if( st_task_clr_event(TASK_ID_HAL_UART_TXD, ST_TASK_EVT_ALL) )
-        return ST_ERR_GENERIC;
 
     switch ( port )
     {
@@ -372,6 +372,11 @@ st_err_t hal_uart_close( st_uint8_t port )
         break;
     }
 
+    if( err = st_task_delete(TASK_ID_HAL_UART_RXD) )
+        return err;
+    if( err = st_task_delete(TASK_ID_HAL_UART_TXD) )
+        return err;
+    
     return ST_ERR_NONE;
 }
 
@@ -383,83 +388,69 @@ st_err_t hal_uart_close( st_uint8_t port )
   * @note   None
   * @retval None
   */
-static st_uint32_t hal_uart_driver_task_rxd( void *pmsg, st_uint32_t event )
+static void hal_uart_driver_task_rxd( st_int8_t event_id )
 {
-    (void)pmsg;
-
-    if( event & TASK_EVT_UART0_RXD )
+    switch ( event_id )
     {
-        
-        return TASK_EVT_UART0_RXD;
+        case TASK_EVT_UART0_RXD:
+            hal_uart_isr_event_rxd( HAL_UART_PORT_0 );
+        break;
+
+        case TASK_EVT_UART1_RXD:
+            hal_uart_isr_event_rxd( HAL_UART_PORT_1 );
+        break;
+
+        case TASK_EVT_UART0_PERR:
+            hal_uart_isr_event_perr( HAL_UART_PORT_0 );
+        break;
+
+        case TASK_EVT_UART1_PERR:
+            hal_uart_isr_event_perr( HAL_UART_PORT_1 );
+        break;
+
+        case TASK_EVT_UART0_OVF:
+            hal_uart_isr_event_ovf( HAL_UART_PORT_0 );
+        break;
+
+        case TASK_EVT_UART1_OVF:
+            hal_uart_isr_event_ovf( HAL_UART_PORT_1 );
+        break;
     }
-
-    if( event & TASK_EVT_UART1_RXD )
-    {
-
-        return TASK_EVT_UART1_RXD;
-    }
-
-    if( event & TASK_EVT_UART0_PERR )
-    {
-
-        return TASK_EVT_UART0_PERR;
-    }
-
-    if( event & TASK_EVT_UART1_PERR )
-    {
-
-        return TASK_EVT_UART1_PERR;
-    }
-
-    if( event & TASK_EVT_UART0_OVF )
-    {
-        return TASK_EVT_UART0_OVF;
-    }
-
-    if( event & TASK_EVT_UART1_OVF )
-    {
-        return TASK_EVT_UART1_OVF;
-    }
-
-    return ST_TASK_EVT_ALL;
 }
 
-static st_uint32_t hal_uart_driver_task_txd( void *pmsg, st_uint32_t event )
+static void hal_uart_driver_task_txd( st_int8_t event_id )
 {
-    (void)pmsg;
-
-    if( event & TASK_EVT_UART0_TXD )
+    switch ( event_id )
     {
-        return TASK_EVT_UART0_TXD;
-    }
+        case TASK_EVT_UART0_TXD:
+            hal_uart_isr_event_txd( HAL_UART_PORT_0 );
+        break;
 
-    if( event & TASK_EVT_UART1_TXD )
-    {
-        return TASK_EVT_UART1_TXD;
+        case TASK_EVT_UART1_TXD:
+            hal_uart_isr_event_txd( HAL_UART_PORT_1 );
+        break;
     }
-
-    return ST_TASK_EVT_ALL;
 }
 
-void hal_uart_driver_event_txd( st_uint8_t port )
+static void hal_uart_isr_event_txd( st_uint8_t port )
 {
     if( uart_ctrl[port].callback )
         uart_ctrl[port].callback( HAL_UART_EVENT_TXD );
 }
 
-void hal_uart_driver_event_rxd( st_uint8_t port )
+static void hal_uart_isr_event_rxd( st_uint8_t port )
 {
     if( uart_ctrl[port].callback )
         uart_ctrl[port].callback( HAL_UART_EVENT_RXD );
 }
 
-void hal_uart_driver_event_ovf( st_uint8_t port )
+static void hal_uart_isr_event_ovf( st_uint8_t port )
 {
     if( uart_ctrl[port].callback )
         uart_ctrl[port].callback( HAL_UART_EVENT_OVF );
 }
 
-void hal_uart_driver_event_perr( st_uint8_t port )
+static void hal_uart_isr_event_perr( st_uint8_t port )
 {
     if( uart_ctrl[port].callback )
         uart_ctrl[port].callback( HAL_UART_EVENT_PERR );
@@ -479,7 +470,7 @@ static void hal_uart_isr( st_uint8_t port )
                           uart_ctrl[port].rx_tail, 
                           uart_cache[port].rx_cache_size) )
         {
-            st_task_set_event( TASK_ID_DRIVERS, uart_event[port].ovf );
+            st_task_set_event( TASK_ID_HAL_UART_RXD, uart_event[port].ovf );
         }
         else
         {
@@ -487,7 +478,7 @@ static void hal_uart_isr( st_uint8_t port )
                           uart_ctrl[port].rx_head, 
                           uart_cache[port].rx_cache, 
                           uart_cache[port].rx_cache_size );
-            st_task_set_event( TASK_ID_DRIVERS, uart_event[port].rxd );
+            st_task_set_event( TASK_ID_HAL_UART_RXD, uart_event[port].rxd );
         }
     }
 
@@ -503,13 +494,13 @@ static void hal_uart_isr( st_uint8_t port )
                           uart_ctrl[port].tx_tail, 
                           uart_cache[port].tx_cache, 
                           uart_cache[port].tx_cache_size );
-            st_task_set_event( TASK_ID_DRIVERS, uart_event[port].txd );
+            st_task_set_event( TASK_ID_HAL_UART_TXD, uart_event[port].txd );
         }
     }
 
     if( LL_USART_IsActiveFlag_PE(USARTx[port]) )
     {
-        st_task_set_event( TASK_ID_DRIVERS, uart_event[port].perr );
+        st_task_set_event( TASK_ID_HAL_UART_RXD, uart_event[port].perr );
         LL_USART_ClearFlag_PE( USARTx[port] );
     }
 }

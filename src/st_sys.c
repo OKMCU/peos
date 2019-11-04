@@ -20,13 +20,9 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static st_uint32_t curr_event;
-static st_uint32_t proc_event;
-static st_uint32_t diff_event;
-static st_uint32_t set_event;
-static st_uint32_t clr_event;
-static void *pmsg;
-static st_uint8_t task_id;
+static st_uint32_t st_task_event;
+static st_uint8_t st_task_id;
+static st_int8_t st_event_id;
 ST_TCB_t st_task_list[ST_TASK_MAX];
 
 /* Private function prototypes -----------------------------------------------*/
@@ -41,15 +37,11 @@ extern st_uint8_t __st_clock_update( void );
 extern void __st_timer_init( void );
 extern void __st_timer_process( st_uint8_t delta_systick );
 #endif
-#ifdef ST_MSG_EN
-extern void *__st_msg_recv( st_uint8_t task_id );
-extern void __st_msg_delete ( void *pmsg );
-#endif
 
 /* Exported function implementations -----------------------------------------*/
 st_uint8_t st_get_task_id_self( void )
 {
-    return task_id;
+    return st_task_id;
 }
 
 int main( void )
@@ -89,51 +81,49 @@ int main( void )
 #endif // (ST_TIMER_EN > 0)
 #endif // (ST_CLOCK_EN > 0)
         
-        for( task_id = 0; task_id < ST_TASK_MAX; task_id++ )
+        for( st_task_id = 0; st_task_id < ST_TASK_MAX; st_task_id++ )
         {
 #ifdef ST_MSG_EN
-            pmsg = __st_msg_recv( task_id );
-            if( pmsg )
+            if( st_task_list[st_task_id].phead )
             {
-                if( st_task_list[task_id].p_task_handler )
-                {
-                    st_task_list[task_id].p_task_handler( pmsg, 0x00000000 );
-                    break;
-                }
-                __st_msg_delete( pmsg );
+                st_task_list[st_task_id].p_task_handler( ST_TASK_EVT_MSG );
+                break;
             }
 #endif
             
             ST_ENTER_CRITICAL();
-            curr_event = st_task_list[task_id].event;
+            st_task_event = st_task_list[st_task_id].event;
             ST_EXIT_CRITICAL();
             
-            if( curr_event )
+            if( st_task_event )
             {
-                if( st_task_list[task_id].p_task_handler )
+                for( st_event_id = 0; st_event_id < 32; st_event_id++ )
                 {
-                    proc_event = st_task_list[task_id].p_task_handler( NULL, curr_event );
-                    ST_ENTER_CRITICAL();
-                    diff_event  =  curr_event ^ st_task_list[task_id].event;
-                    set_event   =  diff_event & st_task_list[task_id].event;
-                    clr_event   =  diff_event & (~st_task_list[task_id].event);
-                    curr_event &= ~proc_event;
-                    curr_event &= ~clr_event;
-                    curr_event |=  set_event;
-                    st_task_list[task_id].event = curr_event;
+                    if( st_task_event & BV( st_event_id ) )
+                    {
+                        break;
+                    }
+                }
+
+                st_task_event = BV( st_event_id );
+                
+                ST_ENTER_CRITICAL();
+                if( st_task_list[st_task_id].event & st_task_event )
+                {
+                    st_task_list[st_task_id].event &= ~st_task_event;
                     ST_EXIT_CRITICAL();
-                    break;
+                    if( st_task_list[st_task_id].p_task_handler )
+                        st_task_list[st_task_id].p_task_handler( st_event_id );
                 }
                 else
                 {
-                    ST_ENTER_CRITICAL();
-                    st_task_list[task_id].event = 0;
                     ST_EXIT_CRITICAL();
                 }
+                break;
             }
         }
 
-        if( task_id == ST_TASK_MAX )
+        if( st_task_id == ST_TASK_MAX )
         {
             st_idle_hook();
         }
