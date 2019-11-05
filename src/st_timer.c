@@ -48,7 +48,7 @@ void __st_timer_process( st_uint8_t delta_systick );
 /* Private function implementations ------------------------------------------*/
 #ifdef ST_TIMER_USE_HEAP
 
-#ifdef 0
+#if 0
 static ST_TIMER_t *st_timer_list_find( ST_TIMER_t *p_timer )
 {
     ST_TIMER_t *p_timer_match;
@@ -253,7 +253,7 @@ void __st_timer_process( st_uint8_t delta_systick )
 #ifdef ST_TIMER_USE_HEAP
     if( p_timers_head )
     {
-        ST_ASSERT( p_timers_tail != NULL );
+        //ST_ASSERT( p_timers_tail != NULL );
         //save the head and tail to local
         p_timer_head = p_timers_head;
         p_timer_tail = p_timers_tail;

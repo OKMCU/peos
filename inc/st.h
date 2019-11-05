@@ -64,8 +64,18 @@ extern "C" {
 #define ST_ERR_BUSY         6
 #define ST_ERR_IO           7
 
+#ifdef  ST_MSG_EN
 #define ST_TASK_EVT_MSG     (-1)
-
+#define ST_MSG_TYPE_CHAR    (-1)
+#define ST_MSG_TYPE_UINT8   (-2)
+#define ST_MSG_TYPE_UINT16  (-3)
+#define ST_MSG_TYPE_UINT32  (-4)
+#define ST_MSG_TYPE_INT8    (-5)
+#define ST_MSG_TYPE_INT16   (-6)
+#define ST_MSG_TYPE_INT32   (-7)
+#define ST_MSG_TYPE_FPT32   (-8)
+#define ST_MSG_TYPE_FPT64   (-9)
+#endif//ST_MSG_EN
 
 /* Exported typedef -----------------------------------------------------------*/
 typedef st_uint8_t st_err_t;
@@ -81,15 +91,12 @@ typedef struct st_msg {
     struct st_msg *next;
     st_uint16_t len;
     st_uint8_t from_task_id;
-    st_uint8_t type;
+    st_int8_t type;
 } ST_MSG_t;
 #endif
 
 typedef struct st_tcb {
-
-    void (*p_task_handler)( st_int8_t event_id );
     st_uint32_t event;
-    
 #ifdef ST_MSG_EN
     ST_MSG_t *phead;
     ST_MSG_t *ptail;
@@ -97,6 +104,10 @@ typedef struct st_tcb {
 
 } ST_TCB_t;
 
+typedef struct st_task {
+    void (*p_task_init)( st_uint8_t task_id );
+    void (*p_task_handler)( st_int8_t event_id );
+} ST_TASK_t;
 
 /* Exported macro -------------------------------------------------------------*/
 #ifndef BV
@@ -225,20 +236,18 @@ typedef struct st_tcb {
 
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-st_err_t st_task_create( st_uint8_t task_id, void (*ptask)( st_int8_t event_id ) );
-st_err_t st_task_delete( st_uint8_t task_id );
 st_err_t st_task_set_event( st_uint8_t task_id, st_int8_t event_id );
 st_err_t st_task_clr_event( st_uint8_t task_id, st_int8_t event_id );
 st_uint8_t st_get_task_id_self( void );
 
 #ifdef ST_MSG_EN
-void *st_msg_create( st_uint16_t len, st_uint8_t type, st_err_t *err );
+void *st_msg_create( st_uint16_t len, st_int8_t type, st_err_t *err );
 void st_msg_delete ( void *pmsg );
 st_err_t st_msg_send( void *pmsg, st_uint8_t task_id );
 st_err_t st_msg_send_urgent ( void *pmsg, st_uint8_t task_id );
 void *st_msg_recv( st_uint8_t task_id );
 st_uint16_t st_msg_len( void *pmsg );
-st_uint8_t st_msg_type( void *pmsg );
+st_int8_t st_msg_type( void *pmsg );
 st_uint8_t st_msg_from( void *pmsg );
 #endif
 

@@ -8,7 +8,9 @@ typedef struct {
     void (*handler)( st_uint8_t argc, char **argv );
 } cli_cmd_t;
 
-void cli_init( void );
+void cli_init( st_uint8_t task_id );
+void cli_task( st_int8_t event_id );
+
 void cli_register_cmds( const cli_cmd_t *cmd );
 void cli_print_char( char ch );
 void cli_print_str( const char *s );

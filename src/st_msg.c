@@ -19,14 +19,12 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern ST_TCB_t st_task_list[ST_TASK_MAX];
+extern ST_TCB_t st_task_tcb[ST_TASK_MAX];
+extern ST_TASK_t st_task_list[ST_TASK_MAX];
 
 /* Private function prototypes -----------------------------------------------*/
-void __st_msg_delete ( void *pmsg );
-void *__st_msg_recv( st_uint8_t task_id );
-
 /* Exported function implementations -----------------------------------------*/
-void *st_msg_create ( st_uint16_t len, st_uint8_t type, st_err_t *err )
+void *st_msg_create ( st_uint16_t len, st_int8_t type, st_err_t *err )
 {
     ST_MSG_t *pnode_new;
     void *pmsg = NULL;
@@ -71,15 +69,15 @@ st_err_t st_msg_send ( void *pmsg, st_uint8_t task_id )
         pnode = (ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t));
         pnode->from_task_id = st_get_task_id_self();
 
-        if( st_task_list[task_id].ptail )
+        if( st_task_tcb[task_id].ptail )
         {
-            st_task_list[task_id].ptail->next = pnode;
+            st_task_tcb[task_id].ptail->next = pnode;
         }
         else
         {
-            st_task_list[task_id].phead = pnode;
+            st_task_tcb[task_id].phead = pnode;
         }
-        st_task_list[task_id].ptail = pnode;
+        st_task_tcb[task_id].ptail = pnode;
         return ST_ERR_NONE;
     }
 
@@ -98,15 +96,15 @@ st_err_t st_msg_send_urgent ( void *pmsg, st_uint8_t task_id )
         pnode = (ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t));
         pnode->from_task_id = st_get_task_id_self();
 
-        if( st_task_list[task_id].phead )
+        if( st_task_tcb[task_id].phead )
         {
-            pnode->next = st_task_list[task_id].phead;
+            pnode->next = st_task_tcb[task_id].phead;
         }
         else
         {
-            st_task_list[task_id].ptail = pnode;
+            st_task_tcb[task_id].ptail = pnode;
         }
-        st_task_list[task_id].phead = pnode;
+        st_task_tcb[task_id].phead = pnode;
         return ST_ERR_NONE;
     }
     return ST_ERR_INVAL;
@@ -119,13 +117,13 @@ void *st_msg_recv( st_uint8_t task_id )
 
     if( task_id < ST_TASK_MAX )
     {
-        if( st_task_list[task_id].phead != NULL )
+        if( st_task_tcb[task_id].phead != NULL )
         {
-            pmsg = (void *)((st_uint8_t *)st_task_list[task_id].phead + sizeof(ST_MSG_t));
-            st_task_list[task_id].phead = st_task_list[task_id].phead->next;
-            if( st_task_list[task_id].phead == NULL )
+            pmsg = (void *)((st_uint8_t *)st_task_tcb[task_id].phead + sizeof(ST_MSG_t));
+            st_task_tcb[task_id].phead = st_task_tcb[task_id].phead->next;
+            if( st_task_tcb[task_id].phead == NULL )
             {
-                st_task_list[task_id].ptail = NULL;
+                st_task_tcb[task_id].ptail = NULL;
             }
         }
     }
@@ -137,7 +135,7 @@ st_uint16_t st_msg_len ( void *pmsg )
     return ((ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t)))->len;
 }
 
-st_uint8_t st_msg_type ( void *pmsg )
+st_int8_t st_msg_type ( void *pmsg )
 {
     return ((ST_MSG_t *)((st_uint8_t *)pmsg - sizeof(ST_MSG_t)))->type;
 }

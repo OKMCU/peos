@@ -7,67 +7,17 @@
 static void *tx_fifo;
 static char *rx_buff;
 static cli_cmd_t *cmd;
+static st_uint8_t cli_task_id;
 //#define IS_CHAR(x)  ( x > 0 && x <= 127 )
-static void cli_task( st_int8_t event_id );
 
-static void cli_uart_driver_callback( st_uint8_t event )
-{
-    st_uint8_t size;
-    st_uint8_t i;
-    char *p_msg;
-    
-    switch ( event )
-    {
-        case HAL_UART_EVENT_RXD:
-            size = hal_uart_rx_buf_used(CLI_UART_PORT);
-            if( size )
-            {
-                p_msg = (char *)st_msg_create(size, 0, NULL);
+static void cli_uart_driver_callback( st_uint8_t event );
 
-                if( p_msg )
-                {
-                    for( i = 0; i < size; i++ )
-                    {
-                        p_msg[i] = hal_uart_getc(CLI_UART_PORT);
-                    }
-                    st_msg_send( p_msg, TASK_ID_CLI );
-                }
-            }
-        break;
 
-        case HAL_UART_EVENT_TXD:
-            if( tx_fifo )
-            {
-                size = hal_uart_tx_buf_free(CLI_UART_PORT);
-                while( size-- )
-                {
-                    if( fifo_len(tx_fifo) )
-                    {
-                        hal_uart_putc(CLI_UART_PORT, fifo_get(tx_fifo));
-                    }
-                    else
-                    {
-                        fifo_delete( tx_fifo );
-                        tx_fifo = NULL;
-                        break;
-                    }
-                }
-            }
-        break;
-
-        case HAL_UART_EVENT_OVF:
-            // ignored
-        break;
-
-        case HAL_UART_EVENT_PERR:
-            // ignored
-        break;
-    }
-}
-
-void cli_init( void )
+void cli_init( st_uint8_t task_id )
 {
     hal_uart_config_t cfg;
+
+    cli_task_id = task_id;
     
     tx_fifo = NULL;
     rx_buff = NULL;
@@ -79,8 +29,29 @@ void cli_init( void )
     cfg.invert    = HAL_UART_NRZ_NORMAL;
     cfg.callback  = cli_uart_driver_callback;
 
-    st_task_create( TASK_ID_CLI, cli_task );
     hal_uart_open( CLI_UART_PORT, &cfg );
+}
+
+void cli_task( st_int8_t event_id )
+{
+    st_uint16_t len, i;
+    char *p_msg;
+    switch ( event_id )
+    {
+        case ST_TASK_EVT_MSG:
+            p_msg = st_msg_recv( st_get_task_id_self() );
+            if( p_msg != NULL )
+            {
+                len = st_msg_len( p_msg );
+                i = 0;
+                while( len-- )
+                {
+                    cli_print_char( p_msg[i++] );
+                }
+                st_msg_delete( p_msg );
+            }
+        break;
+    }
 }
 
 void cli_register_cmds( const cli_cmd_t *cmd )
@@ -126,7 +97,6 @@ void cli_deinit( void )
     tx_fifo = NULL;
     rx_buff = NULL;
     hal_uart_close( CLI_UART_PORT );
-    st_task_delete( TASK_ID_CLI );
 }
 
 
@@ -205,24 +175,57 @@ extern void hal_cli_print_hex32(uint32_t num)
 #endif
 
 
-static void cli_task( st_int8_t event_id )
+static void cli_uart_driver_callback( st_uint8_t event )
 {
-    st_uint16_t len, i;
+    st_uint8_t size;
+    st_uint8_t i;
     char *p_msg;
-    switch ( event_id )
+    
+    switch ( event )
     {
-        case ST_TASK_EVT_MSG:
-            p_msg = st_msg_recv( st_get_task_id_self() );
-            if( p_msg != NULL )
+        case HAL_UART_EVENT_RXD:
+            size = hal_uart_rx_buf_used(CLI_UART_PORT);
+            if( size )
             {
-                len = st_msg_len( p_msg );
-                i = 0;
-                while( len-- )
+                p_msg = (char *)st_msg_create(size, ST_MSG_TYPE_CHAR, NULL);
+
+                if( p_msg )
                 {
-                    cli_print_char( p_msg[i++] );
+                    for( i = 0; i < size; i++ )
+                    {
+                        p_msg[i] = hal_uart_getc(CLI_UART_PORT);
+                    }
+                    st_msg_send( p_msg, cli_task_id );
                 }
-                st_msg_delete( p_msg );
             }
+        break;
+
+        case HAL_UART_EVENT_TXD:
+            if( tx_fifo )
+            {
+                size = hal_uart_tx_buf_free(CLI_UART_PORT);
+                while( size-- )
+                {
+                    if( fifo_len(tx_fifo) )
+                    {
+                        hal_uart_putc(CLI_UART_PORT, fifo_get(tx_fifo));
+                    }
+                    else
+                    {
+                        fifo_delete( tx_fifo );
+                        tx_fifo = NULL;
+                        break;
+                    }
+                }
+            }
+        break;
+
+        case HAL_UART_EVENT_OVF:
+            // ignored
+        break;
+
+        case HAL_UART_EVENT_PERR:
+            // ignored
         break;
     }
 }

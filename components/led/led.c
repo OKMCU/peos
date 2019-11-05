@@ -36,6 +36,7 @@ typedef struct
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+static st_uint8_t led_task_id;
 static st_uint8_t HalLedState;              // LED state at last set/clr/blink update
 static st_uint8_t HalSleepLedState;         // LED state at last set/clr/blink update
 static st_uint8_t preBlinkState;            // Original State before going to blink mode
@@ -47,7 +48,6 @@ static HalLedStatus_t HalLedStatusControl;
 /* Private function prototypes -----------------------------------------------*/
 static void led_on_off ( st_uint8_t leds, st_uint8_t mode );
 static void led_task_update ( void );
-static void led_task( st_int8_t event_id );
 
 /* Exported function implementations -----------------------------------------*/
 /***************************************************************************************************
@@ -59,8 +59,10 @@ static void led_task( st_int8_t event_id );
  *
  * @return  None
  ***************************************************************************************************/
-void led_init (void)
+void led_init ( st_uint8_t task_id )
 {
+    led_task_id = task_id;
+    
 #ifdef LED_0_PIN
     hal_pin_write( LED_0_PIN, LED_ON_POLARITY ? HAL_PIN_LOW : HAL_PIN_HIGH );
     hal_pin_mode( LED_0_PIN, HAL_PIN_MODE_OUTPUT );
@@ -106,7 +108,16 @@ void led_init (void)
     HalLedStatusControl.sleepActive = FALSE;          // Initialize sleepActive to FALSE.
 #endif
 
-    st_task_create( TASK_ID_LED, led_task );
+}
+
+void led_task( st_int8_t event_id )
+{
+    switch ( event_id )
+    {
+        case LED_TASK_EVT_UPDATE:
+            led_task_update();
+        break;
+    }
 }
 
 /***************************************************************************************************
@@ -224,8 +235,8 @@ void led_blink ( st_uint8_t leds, st_uint8_t numBlinks, st_uint8_t percent, st_u
         sts++;
       }
       // Cancel any overlapping timer for blink events
-      st_timer_delete( TASK_ID_LED, LED_TASK_EVT_UPDATE );
-      st_task_set_event ( TASK_ID_LED, LED_TASK_EVT_UPDATE );
+      st_timer_delete( led_task_id, LED_TASK_EVT_UPDATE );
+      st_task_set_event ( led_task_id, LED_TASK_EVT_UPDATE );
     }
     else
     {
@@ -294,20 +305,12 @@ void led_exit_sleep( void )
   led_on_off(HalSleepLedState, LED_MODE_ON);
 
   /* Restart - This takes care BLINKING LEDS */
-  st_task_set_event( TASK_ID_LED, LED_TASK_EVT_UPDATE );
+  st_task_set_event( led_task_id, LED_TASK_EVT_UPDATE );
 
 #if ( LED_BLINK_EN > 0 )
   /* Sleep OFF */
   HalLedStatusControl.sleepActive = FALSE;
 #endif /* BLINK_LEDS */
-}
-
-void led_deinit( void )
-{
-    led_set( LED_ALL, LED_MODE_OFF );
-    st_timer_delete( TASK_ID_LED, LED_TASK_EVT_UPDATE );
-    st_task_clr_event ( TASK_ID_LED, LED_TASK_EVT_UPDATE );
-    st_task_delete( TASK_ID_LED );
 }
 
 /* Private function implementations ------------------------------------------*/
@@ -491,19 +494,9 @@ static void led_task_update (void)
 
     if (next)
     {
-      st_timer_create( TASK_ID_LED, LED_TASK_EVT_UPDATE, next );/* Schedule event */
+      st_timer_create( led_task_id, LED_TASK_EVT_UPDATE, next );/* Schedule event */
     }
   }
-}
-
-static void led_task( st_int8_t event_id )
-{
-    switch ( event_id )
-    {
-        case LED_TASK_EVT_UPDATE:
-            led_task_update();
-        break;
-    }
 }
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

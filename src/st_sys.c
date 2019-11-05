@@ -23,7 +23,8 @@
 static st_uint32_t st_task_event;
 static st_uint8_t st_task_id;
 static st_int8_t st_event_id;
-ST_TCB_t st_task_list[ST_TASK_MAX];
+ST_TCB_t st_task_tcb[ST_TASK_MAX];
+extern ST_TASK_t st_task_list[ST_TASK_MAX];
 
 /* Private function prototypes -----------------------------------------------*/
 #ifdef ST_MEM_EN
@@ -50,7 +51,7 @@ int main( void )
     ST_ENTER_CRITICAL();
     
     /* Initialize the OS's vars */
-    st_memset( st_task_list, 0, sizeof(st_task_list) );
+    st_memset( st_task_tcb, 0, sizeof(st_task_tcb) );
     
 #ifdef ST_MEM_EN
     __st_mem_init();
@@ -84,7 +85,7 @@ int main( void )
         for( st_task_id = 0; st_task_id < ST_TASK_MAX; st_task_id++ )
         {
 #ifdef ST_MSG_EN
-            if( st_task_list[st_task_id].phead )
+            if( st_task_tcb[st_task_id].phead )
             {
                 st_task_list[st_task_id].p_task_handler( ST_TASK_EVT_MSG );
                 break;
@@ -92,7 +93,7 @@ int main( void )
 #endif
             
             ST_ENTER_CRITICAL();
-            st_task_event = st_task_list[st_task_id].event;
+            st_task_event = st_task_tcb[st_task_id].event;
             ST_EXIT_CRITICAL();
             
             if( st_task_event )
@@ -108,9 +109,9 @@ int main( void )
                 st_task_event = BV( st_event_id );
                 
                 ST_ENTER_CRITICAL();
-                if( st_task_list[st_task_id].event & st_task_event )
+                if( st_task_tcb[st_task_id].event & st_task_event )
                 {
-                    st_task_list[st_task_id].event &= ~st_task_event;
+                    st_task_tcb[st_task_id].event &= ~st_task_event;
                     ST_EXIT_CRITICAL();
                     if( st_task_list[st_task_id].p_task_handler )
                         st_task_list[st_task_id].p_task_handler( st_event_id );

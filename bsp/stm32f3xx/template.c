@@ -44,4 +44,3 @@ static void private_function( void )
 }
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
-
