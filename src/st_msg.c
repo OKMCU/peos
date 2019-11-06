@@ -26,31 +26,21 @@ extern const st_uint8_t st_task_max;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Exported function implementations -----------------------------------------*/
-void *st_msg_create ( st_uint16_t len, st_int8_t type, st_err_t *err )
+void *st_msg_create ( st_uint16_t len, st_int8_t type )
 {
     ST_MSG_t *pnode_new;
     void *pmsg = NULL;
 
-    if( len > 0 )
-    {
-        pnode_new = (ST_MSG_t *)st_mem_alloc( sizeof(ST_MSG_t) + len );
-        if( pnode_new )
-        {
-            pmsg = (void *)( (st_uint8_t *)pnode_new + sizeof( ST_MSG_t ) );
-            pnode_new->len = len;
-            pnode_new->type = type;
-            if( err ) *err = ST_ERR_NONE;
-        }
-        else
-        {
-            if( err ) *err = ST_ERR_NOMEM;
-        }
-    }
-    else
-    {
-        if( err ) *err = ST_ERR_INVAL;
-    }
+    ST_ASSERT( len > 0 );
     
+    pnode_new = (ST_MSG_t *)st_mem_alloc( sizeof(ST_MSG_t) + len );
+    if( pnode_new )
+    {
+        pmsg = (void *)( (st_uint8_t *)pnode_new + sizeof( ST_MSG_t ) );
+        pnode_new->len = len;
+        pnode_new->type = type;
+    }
+
     return pmsg;
 }
 

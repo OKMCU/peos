@@ -253,7 +253,7 @@ st_err_t st_task_clr_event( st_uint8_t task_id, st_int8_t event_id );
 st_uint8_t st_get_task_id_self( void );
 
 #ifdef ST_MSG_EN
-void *st_msg_create( st_uint16_t len, st_int8_t type, st_err_t *err );
+void *st_msg_create( st_uint16_t len, st_int8_t type );
 void st_msg_delete ( void *pmsg );
 st_err_t st_msg_send( void *pmsg, st_uint8_t task_id );
 st_err_t st_msg_send_urgent ( void *pmsg, st_uint8_t task_id );

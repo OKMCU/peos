@@ -208,7 +208,7 @@ static void cli_uart_driver_callback( st_uint8_t event )
             size = hal_uart_rx_buf_used(CLI_UART_PORT);
             if( size )
             {
-                p_msg = (char *)st_msg_create(size, ST_MSG_TYPE_CHAR, NULL);
+                p_msg = (char *)st_msg_create(size, ST_MSG_TYPE_CHAR);
 
                 if( p_msg )
                 {
