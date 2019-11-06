@@ -23,7 +23,7 @@ extern const st_uint8_t st_task_max;
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static st_uint32_t st_task_event;
+static st_event_t st_task_event;
 static st_uint8_t st_task_id;
 static st_int8_t st_event_id;
 
@@ -102,14 +102,10 @@ int main( void )
             
             if( st_task_event )
             {
-                for( st_event_id = 0; st_event_id < 32; st_event_id++ )
+                while( (st_task_event & BV(st_event_id)) == 0 )
                 {
-                    if( st_task_event & BV( st_event_id ) )
-                    {
-                        break;
-                    }
+                    st_event_id++;
                 }
-
                 st_task_event = BV( st_event_id );
                 
                 ST_ENTER_CRITICAL();

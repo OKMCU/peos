@@ -25,7 +25,7 @@ extern const st_uint8_t st_task_max;
 /* Exported function implementations -----------------------------------------*/
 st_err_t st_task_set_event   ( st_uint8_t task_id, st_int8_t event_id )
 {
-    st_uint32_t event;
+    st_event_t event;
     
     if( task_id >= st_task_max || event_id < 0 )
         return ST_ERR_INVAL;
@@ -39,7 +39,7 @@ st_err_t st_task_set_event   ( st_uint8_t task_id, st_int8_t event_id )
 
 st_err_t st_task_clr_event   ( st_uint8_t task_id, st_int8_t event_id )
 {
-    st_uint32_t event;
+    st_event_t event;
     
     if( task_id >= st_task_max || event_id < 0 )
         return ST_ERR_INVAL;

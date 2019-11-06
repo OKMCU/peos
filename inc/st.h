@@ -80,6 +80,15 @@ extern "C" {
 
 /* Exported typedef -----------------------------------------------------------*/
 typedef st_uint8_t st_err_t;
+#if ST_TASK_EVENT_MAX <= 8
+typedef st_uint8_t st_event_t;
+#elif ST_TASK_EVENT_MAX <= 16
+typedef st_uint16_t st_event_t;
+#elif ST_TASK_EVENT_MAX <= 32
+typedef st_uint16_t st_event_t;
+#else
+#error "ST_TASK_EVENT_MAX should not be larger than 32."
+#endif
 
 #ifdef ST_CLOCK_EN
 typedef struct st_clock {
@@ -97,7 +106,9 @@ typedef struct st_msg {
 #endif
 
 typedef struct st_tcb {
-    st_uint32_t event;
+
+    st_event_t event;
+
 #ifdef ST_MSG_EN
     ST_MSG_t *phead;
     ST_MSG_t *ptail;
