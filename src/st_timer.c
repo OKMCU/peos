@@ -15,6 +15,7 @@
 #ifdef ST_TIMER_EN
 
 /* Exported variables --------------------------------------------------------*/
+extern const st_uint8_t st_task_max;
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 #ifdef ST_TIMER_USE_HEAP
@@ -302,7 +303,7 @@ st_err_t st_timer_create ( st_uint8_t task_id, st_int8_t event_id, st_uint32_t t
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif
 
-    if( task_id >= ST_TASK_MAX 
+    if( task_id >= st_task_max 
       ||event_id < 0 
       ||event_id >= ST_TASK_EVENT_MAX
       ||tick == 0 )
@@ -362,7 +363,7 @@ st_err_t st_timer_update ( st_uint8_t task_id, st_int8_t event_id, st_uint32_t t
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif
 
-    if( task_id >= ST_TASK_MAX 
+    if( task_id >= st_task_max 
       ||event_id < 0 
       ||event_id >= ST_TASK_EVENT_MAX
       ||tick == 0 )
@@ -404,7 +405,7 @@ st_err_t st_timer_delete ( st_uint8_t task_id, st_int8_t event_id )
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif
 
-    if( task_id >= ST_TASK_MAX 
+    if( task_id >= st_task_max 
       ||event_id < 0 
       ||event_id >= ST_TASK_EVENT_MAX )
       return ST_ERR_INVAL;
@@ -447,7 +448,7 @@ st_uint32_t st_timer_query  ( st_uint8_t task_id, st_int8_t event_id )
 #endif//(ST_TIMER_MAX >= UINT8_MAX)
 #endif
 
-    if( task_id >= ST_TASK_MAX 
+    if( task_id >= st_task_max 
       ||event_id < 0 
       ||event_id >= ST_TASK_EVENT_MAX )
       return 0;

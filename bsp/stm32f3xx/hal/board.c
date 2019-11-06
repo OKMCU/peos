@@ -36,15 +36,17 @@
 #include "stm32f3xx_ll_wwdg.h"
 
 #include "st.h"
-#include "application/demo.h"
+
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-/* Exported function implementations -----------------------------------------*/
 static void SystemClock_Config( void );
+
+/* Exported function implementations -----------------------------------------*/
+
 
 #ifdef ST_ASSERT_EN
 /**
@@ -66,12 +68,6 @@ void st_assert_failed(char *file, st_uint32_t line)
 }
 #endif // (ST_ASSERT_EN > 0)
 
-void st_idle_hook( void )
-{
-    // go into sleep or low power mode
-}
-
-
 #ifdef ST_CLOCK_EN
 /**
   * @brief  This function handles SysTick Handler.
@@ -86,7 +82,7 @@ void SysTick_Handler(void)
 }
 #endif // (ST_TIMER_EN > 0)
 
-void st_por_hook( void )
+void st_board_init( void )
 {
     SystemClock_Config();
     
@@ -110,9 +106,11 @@ void st_por_hook( void )
     //NVIC_SetPriority(EXTI1_IRQn,   4);
     //NVIC_SetPriority(EXTI0_IRQn,   5);
     //NVIC_SetPriority(EXTI15_10_IRQn,6);
+}
 
-    st_task_create( TASK_ID_DEMO, demo_task );
-    st_task_set_event( TASK_ID_DEMO, DEMO_TASK_EVT_PWR_ON_INIT );
+void st_board_idle( void )
+{
+
 }
 
 /* Private function implementations ------------------------------------------*/
@@ -187,3 +185,4 @@ ST_ASSERT_SIZE(st_int32_t, 4);
 ST_ASSERT_SIZE(st_uint32_t, 4);
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+

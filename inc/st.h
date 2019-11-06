@@ -19,6 +19,7 @@ extern "C" {
 /* Includes -------------------------------------------------------------------*/
 #include "st_config.h"
 #include "st_portable.h"
+#include "board.h"
 
 /* Exported define ------------------------------------------------------------*/
 #define ST_VERSION                    "V1.0.0"

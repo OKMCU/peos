@@ -19,8 +19,10 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern ST_TCB_t st_task_tcb[ST_TASK_MAX];
-extern ST_TASK_t st_task_list[ST_TASK_MAX];
+extern const ST_TASK_t *st_task_list;
+extern ST_TCB_t *st_task_tcb;
+extern const st_uint8_t st_task_max;
+
 
 /* Private function prototypes -----------------------------------------------*/
 /* Exported function implementations -----------------------------------------*/
@@ -61,7 +63,7 @@ st_err_t st_msg_send ( void *pmsg, st_uint8_t task_id )
 {
     ST_MSG_t *pnode;
 
-    if( task_id < ST_TASK_MAX )
+    if( task_id < st_task_max )
     {
         if( st_task_list[task_id].p_task_handler == NULL )
             return ST_ERR_GENERIC;
@@ -88,7 +90,7 @@ st_err_t st_msg_send_urgent ( void *pmsg, st_uint8_t task_id )
 {
     ST_MSG_t *pnode;
 
-    if( task_id < ST_TASK_MAX )
+    if( task_id < st_task_max )
     {
         if( st_task_list[task_id].p_task_handler == NULL )
             return ST_ERR_GENERIC;
@@ -115,7 +117,7 @@ void *st_msg_recv( st_uint8_t task_id )
 {
     void *pmsg = NULL;
 
-    if( task_id < ST_TASK_MAX )
+    if( task_id < st_task_max )
     {
         if( st_task_tcb[task_id].phead != NULL )
         {

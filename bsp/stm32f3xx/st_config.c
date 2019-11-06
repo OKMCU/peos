@@ -12,22 +12,25 @@
 /* Includes ------------------------------------------------------------------*/
 #include "st.h"
 #include "hal_drivers.h"
-#include "components/led/led.h"
 #include "components/cli/cli.h"
+#include "components/led/led.h"
 #include "application/demo.h"
 
-/* Exported variables --------------------------------------------------------*/
-const ST_TASK_t st_task_list[ST_TASK_MAX] = {
-    NULL,
+/* Tasks ---------------------------------------------------------------------*/
+static const ST_TASK_t st_task_array[] = {
+    { hal_uart_rxd_init, hal_uart_rxd_task },
+    { hal_uart_txd_init, hal_uart_txd_task },
+    { cli_init, cli_task },
+    { led_init, led_task },
+    { demo_init, demo_task },
 };
-/* Private define ------------------------------------------------------------*/
-/* Private typedef -----------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-/* Exported function implementations -----------------------------------------*/
-/* Private function implementations ------------------------------------------*/
 
-
+/* Do NOT modify -------------------------------------------------------------*/
+#define ST_TASK_NUM     (sizeof(st_task_array)/sizeof(ST_TASK_t))
+static ST_TCB_t st_tcb_array [ST_TASK_NUM] = {0};
+const ST_TASK_t *st_task_list = st_task_array;
+const st_uint8_t st_task_max = ST_TASK_NUM;
+ST_TCB_t *st_task_tcb = st_tcb_array;
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+

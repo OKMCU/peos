@@ -17,15 +17,17 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern ST_TASK_t st_task_list[ST_TASK_MAX];
-extern ST_TCB_t st_task_tcb[ST_TASK_MAX];
+extern const ST_TASK_t *st_task_list;
+extern ST_TCB_t *st_task_tcb;
+extern const st_uint8_t st_task_max;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Exported function implementations -----------------------------------------*/
 st_err_t st_task_set_event   ( st_uint8_t task_id, st_int8_t event_id )
 {
     st_uint32_t event;
     
-    if( task_id >= ST_TASK_MAX || event_id < 0 )
+    if( task_id >= st_task_max || event_id < 0 )
         return ST_ERR_INVAL;
     
     event = BV(event_id);
@@ -39,7 +41,7 @@ st_err_t st_task_clr_event   ( st_uint8_t task_id, st_int8_t event_id )
 {
     st_uint32_t event;
     
-    if( task_id >= ST_TASK_MAX || event_id < 0 )
+    if( task_id >= st_task_max || event_id < 0 )
         return ST_ERR_INVAL;
     
     event = ~(BV(event_id));

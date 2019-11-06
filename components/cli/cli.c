@@ -15,21 +15,10 @@ static void cli_uart_driver_callback( st_uint8_t event );
 
 void cli_init( st_uint8_t task_id )
 {
-    hal_uart_config_t cfg;
-
     cli_task_id = task_id;
     
     tx_fifo = NULL;
     rx_buff = NULL;
-    cfg.baud_rate = HAL_UART_BAUD_RATE_115200;
-    cfg.data_bits = HAL_UART_DATA_BITS_8;
-    cfg.stop_bits = HAL_UART_STOP_BITS_1;
-    cfg.parity    = HAL_UART_PARITY_NONE;
-    cfg.bit_order = HAL_UART_BIT_ORDER_LSB;
-    cfg.invert    = HAL_UART_NRZ_NORMAL;
-    cfg.callback  = cli_uart_driver_callback;
-
-    hal_uart_open( CLI_UART_PORT, &cfg );
 }
 
 void cli_task( st_int8_t event_id )
@@ -51,6 +40,45 @@ void cli_task( st_int8_t event_id )
                 st_msg_delete( p_msg );
             }
         break;
+    }
+}
+
+void cli_enable( void )
+{
+    hal_uart_config_t cfg;
+    
+    cfg.baud_rate = HAL_UART_BAUD_RATE_115200;
+    cfg.data_bits = HAL_UART_DATA_BITS_8;
+    cfg.stop_bits = HAL_UART_STOP_BITS_1;
+    cfg.parity    = HAL_UART_PARITY_NONE;
+    cfg.bit_order = HAL_UART_BIT_ORDER_LSB;
+    cfg.invert    = HAL_UART_NRZ_NORMAL;
+    cfg.callback  = cli_uart_driver_callback;
+    hal_uart_open( CLI_UART_PORT, &cfg );
+}
+
+void cli_disable( void )
+{
+    void *p_msg;
+    
+    hal_uart_close( CLI_UART_PORT );
+    
+    if( tx_fifo )
+    {
+        fifo_delete( tx_fifo );
+        tx_fifo = NULL;
+    }
+    
+    if( rx_buff )
+    {
+        st_mem_free( rx_buff );
+        rx_buff = 0;
+    }
+
+    
+    while( (p_msg = st_msg_recv(cli_task_id)) != NULL )
+    {
+        st_msg_delete( p_msg );
     }
 }
 
@@ -90,13 +118,6 @@ void cli_print_str(const char *s)
     {
         cli_print_char(*s++);
     }
-}
-
-void cli_deinit( void )
-{
-    tx_fifo = NULL;
-    rx_buff = NULL;
-    hal_uart_close( CLI_UART_PORT );
 }
 
 

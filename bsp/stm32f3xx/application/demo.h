@@ -19,8 +19,6 @@ extern "C" {
 /* Includes -------------------------------------------------------------------*/
 #include <stdint.h>
 /* Exported define ------------------------------------------------------------*/
-#define TASK_ID_DEMO                    5
-
 #define DEMO_TASK_EVT_PWR_ON_INIT       0
 #define DEMO_TASK_EVT_LED_BLINK_FAST    1
 #define DEMO_TASK_EVT_LED_BLINK_SLOW    2
@@ -29,6 +27,7 @@ extern "C" {
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
+void demo_init( uint8_t task_id );
 void demo_task( int8_t event_id );
 
 #ifdef __cplusplus

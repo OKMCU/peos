@@ -11,6 +11,8 @@ typedef struct {
 void cli_init( st_uint8_t task_id );
 void cli_task( st_int8_t event_id );
 
+void cli_enable( void );
+void cli_disable( void );
 void cli_register_cmds( const cli_cmd_t *cmd );
 void cli_print_char( char ch );
 void cli_print_str( const char *s );
@@ -19,7 +21,7 @@ void cli_print_uint( st_uint32_t num );
 void cli_print_hex8( st_uint8_t num );
 void cli_print_hex16( st_uint16_t num );
 void cli_print_hex32( st_uint32_t num );
-void cli_deinit( void );
+
 
 
 #endif /* __CLI_H__ */

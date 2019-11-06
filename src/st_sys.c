@@ -14,6 +14,9 @@
 #include "st.h"
 
 /* Exported variables --------------------------------------------------------*/
+extern const ST_TASK_t *st_task_list;
+extern ST_TCB_t *st_task_tcb;
+extern const st_uint8_t st_task_max;
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -23,8 +26,6 @@
 static st_uint32_t st_task_event;
 static st_uint8_t st_task_id;
 static st_int8_t st_event_id;
-ST_TCB_t st_task_tcb[ST_TASK_MAX];
-extern ST_TASK_t st_task_list[ST_TASK_MAX];
 
 /* Private function prototypes -----------------------------------------------*/
 #ifdef ST_MEM_EN
@@ -49,9 +50,9 @@ int main( void )
 {
     /* Disable Interrupts */
     ST_ENTER_CRITICAL();
-    
-    /* Initialize the OS's vars */
-    st_memset( st_task_tcb, 0, sizeof(st_task_tcb) );
+
+    /* Power on reset hook */
+    st_board_init();
     
 #ifdef ST_MEM_EN
     __st_mem_init();
@@ -68,8 +69,11 @@ int main( void )
     /* Enable Interrupts */
     ST_EXIT_CRITICAL();
 
-    /* Power on reset hook */
-    st_por_hook();
+    for( st_task_id = 0; st_task_id < st_task_max; st_task_id++ )
+    {
+        if(st_task_list[st_task_id].p_task_init)
+            st_task_list[st_task_id].p_task_init( st_task_id );
+    }
     
     /* Start Single-Thread task scheduler */
     for(;;)
@@ -82,7 +86,7 @@ int main( void )
 #endif // (ST_TIMER_EN > 0)
 #endif // (ST_CLOCK_EN > 0)
         
-        for( st_task_id = 0; st_task_id < ST_TASK_MAX; st_task_id++ )
+        for( st_task_id = 0; st_task_id < st_task_max; st_task_id++ )
         {
 #ifdef ST_MSG_EN
             if( st_task_tcb[st_task_id].phead )
@@ -124,9 +128,9 @@ int main( void )
             }
         }
 
-        if( st_task_id == ST_TASK_MAX )
+        if( st_task_id == st_task_max )
         {
-            st_idle_hook();
+            st_board_idle();
         }
     }
     //return 0;

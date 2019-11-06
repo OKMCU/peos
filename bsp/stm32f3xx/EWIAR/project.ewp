@@ -1000,6 +1000,9 @@
   <group>
     <name>hal</name>
     <file>
+      <name>$PROJ_DIR$\..\hal\board.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\hal\hal_pin.c</name>
     </file>
     <file>
@@ -1023,17 +1026,11 @@
         <name>$PROJ_DIR$\..\..\..\src\umm_malloc\umm_poison.c</name>
       </file>
     </group>
-    <group>
-      <name>portable</name>
-      <file>
-        <name>$PROJ_DIR$\..\st_config.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\st_portable.c</name>
-      </file>
-    </group>
     <file>
       <name>$PROJ_DIR$\..\..\..\src\st_clock.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\st_config.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\src\st_msg.c</name>
