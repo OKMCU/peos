@@ -113,8 +113,8 @@ int main( void )
                 {
                     st_task_tcb[st_task_id].event &= ~st_task_event;
                     ST_EXIT_CRITICAL();
-                    if( st_task_list[st_task_id].p_task_handler )
-                        st_task_list[st_task_id].p_task_handler( st_event_id );
+                    ST_ASSERT( st_task_list[st_task_id].p_task_handler != NULL );
+                    st_task_list[st_task_id].p_task_handler( st_event_id );
                 }
                 else
                 {

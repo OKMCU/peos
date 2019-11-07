@@ -58,12 +58,14 @@ st_uint8_t __st_clock_update( void )
 
 void st_clock_get     ( ST_CLOCK_t *clock )
 {
+    ST_ASSERT( clock != NULL );
     clock->tick[0] = sysclock.tick[0];
     clock->tick[1] = sysclock.tick[1];
 }
 
 void st_clock_set     ( const ST_CLOCK_t *clock )
 {
+    ST_ASSERT( clock != NULL );
     sysclock.tick[0] = clock->tick[0];
     sysclock.tick[1] = clock->tick[1];
 }
