@@ -65,7 +65,7 @@ extern "C" {
 #define HAL_UART_NRZ_INVERTED                    1     /* inverted mode */
 
 /* Exported typedef -----------------------------------------------------------*/
-typedef struct hal_uart_config {
+typedef struct {
     st_uint32_t baud_rate;
     st_uint16_t data_bits   :4;
     st_uint16_t stop_bits   :2;
@@ -84,7 +84,8 @@ void hal_uart_rxd_task( st_int8_t event_id );
 void hal_uart_txd_init( st_uint8_t task_id );
 void hal_uart_txd_task( st_int8_t event_id );
 
-void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg );
+void hal_uart_config( st_uint8_t port, const hal_uart_config_t *cfg );
+void hal_uart_open( st_uint8_t port );
 void hal_uart_putc( st_uint8_t port, st_uint8_t byte );
 st_uint8_t hal_uart_getc( st_uint8_t port );
 st_uint8_t hal_uart_tx_buf_free( st_uint8_t port );

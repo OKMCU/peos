@@ -33,37 +33,12 @@ static void cli_uart_driver_callback( st_uint8_t event );
 /* Exported function implementations -----------------------------------------*/
 void cli_init( st_uint8_t task_id )
 {
+    hal_uart_config_t cfg;
+    
     cli_task_id = task_id;
     
     tx_fifo = NULL;
     rx_buff = NULL;
-}
-
-void cli_task( st_int8_t event_id )
-{
-    st_uint16_t len, i;
-    char *p_msg;
-    switch ( event_id )
-    {
-        case ST_TASK_EVT_MSG:
-            p_msg = st_msg_recv( st_get_task_id_self() );
-            if( p_msg != NULL )
-            {
-                len = st_msg_len( p_msg );
-                i = 0;
-                while( len-- )
-                {
-                    cli_print_char( p_msg[i++] );
-                }
-                st_msg_delete( p_msg );
-            }
-        break;
-    }
-}
-
-void cli_enable( void )
-{
-    hal_uart_config_t cfg;
     
     cfg.baud_rate = HAL_UART_BAUD_RATE_115200;
     cfg.data_bits = HAL_UART_DATA_BITS_8;
@@ -72,7 +47,33 @@ void cli_enable( void )
     cfg.bit_order = HAL_UART_BIT_ORDER_LSB;
     cfg.invert    = HAL_UART_NRZ_NORMAL;
     cfg.callback  = cli_uart_driver_callback;
-    hal_uart_open( CLI_UART_PORT, &cfg );
+
+    hal_uart_config( CLI_UART_PORT, &cfg );
+}
+
+void cli_task( st_int8_t event_id )
+{
+    st_uint16_t len, i;
+    char *p_msg;
+
+    ST_ASSERT( event_id ==  ST_TASK_EVT_MSG );
+
+    p_msg = st_msg_recv( st_get_task_id_self() );
+
+    ST_ASSERT( p_msg != NULL );
+    
+    len = st_msg_len( p_msg );
+    i = 0;
+    while( len-- )
+    {
+        cli_print_char( p_msg[i++] );
+    }
+    st_msg_delete( p_msg );
+}
+
+void cli_enable( void )
+{
+    hal_uart_open( CLI_UART_PORT );
 }
 
 void cli_disable( void )

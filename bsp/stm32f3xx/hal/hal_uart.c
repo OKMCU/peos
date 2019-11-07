@@ -190,7 +190,7 @@ void hal_uart_txd_task( st_int8_t event_id )
   * @note   None
   * @retval None
   */
-void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
+void hal_uart_config( st_uint8_t port, const hal_uart_config_t *cfg )
 {
     ST_ASSERT( port < HAL_UART_PORT_MAX );
     ST_ASSERT( cfg != NULL );
@@ -295,7 +295,13 @@ void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
     // init uart control body info
     st_memset( &uart_ctrl[port], 0, sizeof(uart_ctrl_t) );
     uart_ctrl[port].callback = cfg->callback;
+}
 
+void hal_uart_open( st_uint8_t port )
+{
+    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    ST_ASSERT( !LL_USART_IsEnabled(USARTx[port]) );
+    
     LL_USART_EnableDirectionRx( USARTx[port] );
     LL_USART_EnableDirectionTx( USARTx[port] );
     LL_USART_EnableIT_RXNE( USARTx[port] );
