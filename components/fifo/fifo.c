@@ -1,22 +1,21 @@
-/******************************************************************************
-
- @file  
-
- @brief 
-
- Group: 
- Target Device: 
-
- ******************************************************************************
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ *
+ ******************************************************************************/
  
-
- ******************************************************************************
- Release Name: 
- Release Date: 2016-06-09 06:57:09
- *****************************************************************************/
+/* Includes ------------------------------------------------------------------*/
 #include "st.h"
-#include "components\fifo\fifo.h"
+#include "components/fifo/fifo.h"
 
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
 typedef struct FIFOPage {
     st_uint8_t buf[FIFO_PAGE_SIZE];
     st_uint16_t head;
@@ -30,6 +29,10 @@ typedef struct {
     FIFOPage_t *tailPage;
 } FIFOHandle_t;
 
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+/* Private function prototypes -----------------------------------------------*/
+/* Exported function implementations -----------------------------------------*/
 void *fifo_create(void)
 {
     void *handle;
@@ -133,7 +136,9 @@ st_uint8_t fifo_get(void *fifo)
             }
         }
     }
-
     return u8tmp;
-    
 }
+
+/* Private function implementations ------------------------------------------*/
+
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

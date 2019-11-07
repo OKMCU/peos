@@ -13,11 +13,11 @@
 #include "stm32f3xx_ll_bus.h"
 #include "stm32f3xx_ll_gpio.h"
 #include "stm32f3xx_ll_usart.h"
-#include "hal_drivers.h"
 #include "hal_uart.h"
 #include "components/fifo/fifo.h"
 #include "components/utilities/rbuf.h"
 
+#ifdef ST_USING_HAL_UART
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define UART0_RX_CACHE_SIZE         8
@@ -190,10 +190,11 @@ void hal_uart_txd_task( st_int8_t event_id )
   * @note   None
   * @retval None
   */
-st_err_t hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
+void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
 {
-    if( port >= HAL_UART_PORT_MAX || cfg == NULL ) 
-        return ST_ERR_INVAL;
+    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    ST_ASSERT( cfg != NULL );
+    ST_ASSERT( !LL_USART_IsEnabled(USARTx[port]) );
     
     // reset peripherals firstly
     switch ( port )
@@ -299,8 +300,6 @@ st_err_t hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
     LL_USART_EnableDirectionTx( USARTx[port] );
     LL_USART_EnableIT_RXNE( USARTx[port] );
     LL_USART_Enable( USARTx[port] );
-
-    return ST_ERR_NONE;
 }
 
 /**
@@ -310,11 +309,11 @@ st_err_t hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
   * @note   None
   * @retval None
   */
-st_err_t hal_uart_putc( st_uint8_t port, st_uint8_t byte )
+void hal_uart_putc( st_uint8_t port, st_uint8_t byte )
 {
-    if( port >= HAL_UART_PORT_MAX )
-        return ST_ERR_INVAL;
-
+    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    ST_ASSERT( LL_USART_IsEnabled(USARTx[port]) );
+    
     while( RING_BUF_FULL(uart_ctrl[port].tx_head, 
                          uart_ctrl[port].tx_tail, 
                          uart_cache[port].tx_cache_size) );
@@ -332,8 +331,6 @@ st_err_t hal_uart_putc( st_uint8_t port, st_uint8_t byte )
         LL_USART_TransmitData8( USARTx[port], byte );
     }
     LL_USART_EnableIT_TXE( USARTx[port] );
-
-    return ST_ERR_NONE;
 }
 
 /**
@@ -347,8 +344,8 @@ st_uint8_t hal_uart_getc( st_uint8_t port )
 {
     st_uint8_t byte;
     
-    if( port >= HAL_UART_PORT_MAX )
-        return 0;
+    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    ST_ASSERT( LL_USART_IsEnabled(USARTx[port]) );
 
     while( RING_BUF_EMPTY(uart_ctrl[port].rx_head, 
                           uart_ctrl[port].rx_tail) );
@@ -365,9 +362,7 @@ st_uint8_t hal_uart_getc( st_uint8_t port )
 
 st_uint8_t hal_uart_tx_buf_free( st_uint8_t port )
 {
-    if( port >= HAL_UART_PORT_MAX )
-        return 0;
-    
+    ST_ASSERT( port < HAL_UART_PORT_MAX );
     return RING_BUF_FREE_SIZE( uart_ctrl[port].tx_head, 
                                uart_ctrl[port].tx_tail, 
                                uart_cache[port].tx_cache_size );
@@ -375,9 +370,7 @@ st_uint8_t hal_uart_tx_buf_free( st_uint8_t port )
 
 st_uint8_t hal_uart_rx_buf_used( st_uint8_t port )
 {
-    if( port >= HAL_UART_PORT_MAX )
-        return 0;
-    
+    ST_ASSERT( port < HAL_UART_PORT_MAX );
     return RING_BUF_USED_SIZE( uart_ctrl[port].rx_head, 
                                uart_ctrl[port].rx_tail, 
                                uart_cache[port].rx_cache_size );
@@ -390,10 +383,10 @@ st_uint8_t hal_uart_rx_buf_used( st_uint8_t port )
   * @note   None
   * @retval None
   */
-st_err_t hal_uart_close( st_uint8_t port )
+void hal_uart_close( st_uint8_t port )
 {
-    if( port >= HAL_UART_PORT_MAX )
-        return ST_ERR_INVAL;
+    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    ST_ASSERT( LL_USART_IsEnabled(USARTx[port]) );
     
     LL_USART_DisableDirectionRx( USARTx[port] );
     LL_USART_DisableIT_RXNE( USARTx[port] );
@@ -419,8 +412,6 @@ st_err_t hal_uart_close( st_uint8_t port )
             LL_APB1_GRP1_DisableClock( LL_APB1_GRP1_PERIPH_USART2 );
         break;
     }
-    
-    return ST_ERR_NONE;
 }
 
 /* Private function implementations ------------------------------------------*/
@@ -431,8 +422,6 @@ st_err_t hal_uart_close( st_uint8_t port )
   * @note   None
   * @retval None
   */
-
-
 static void hal_uart_isr( st_uint8_t port )
 {
     st_uint8_t byte;
@@ -490,6 +479,5 @@ void USART2_IRQHandler( void )
 {
     hal_uart_isr( HAL_UART_PORT_1 );
 }
-
+#endif //ST_USING_HAL_UART
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
-

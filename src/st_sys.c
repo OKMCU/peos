@@ -102,6 +102,7 @@ int main( void )
             
             if( st_task_event )
             {
+                st_event_id = 0;
                 while( (st_task_event & BV(st_event_id)) == 0 )
                 {
                     st_event_id++;
@@ -135,3 +136,4 @@ int main( void )
 /* Private function implementations ------------------------------------------*/
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+

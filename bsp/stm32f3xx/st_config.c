@@ -18,10 +18,18 @@
 
 /* Tasks ---------------------------------------------------------------------*/
 static const ST_TASK_t st_task_array[] = {
+#ifdef ST_USING_HAL_UART
     { hal_uart_rxd_init, hal_uart_rxd_task },
+#endif
+#ifdef ST_USING_HAL_UART
     { hal_uart_txd_init, hal_uart_txd_task },
+#endif
+#ifdef ST_USING_CLI
     { cli_init, cli_task },
+#endif
+#ifdef ST_USING_LED
     { led_init, led_task },
+#endif
     { demo_init, demo_task },
 };
 

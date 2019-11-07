@@ -1,5 +1,25 @@
-#include "rbuf.h"
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ *
+ ******************************************************************************/
 
+/* Includes ------------------------------------------------------------------*/
+#include "components/utilities/rbuf.h"
+
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+/* Private function prototypes -----------------------------------------------*/
+
+/* Exported function implementations -----------------------------------------*/
 void ring_buf_flush( ring_buf_t *rb )
 {
 	rb->head = 0;
@@ -54,4 +74,6 @@ st_size_t ring_buf_free_size( const ring_buf_t *rb )
 {
     return ( rb->head >= rb->tail ) ? (rb->size - 1 - (rb->head - rb->tail)) : (rb->tail - rb->head - 1);
 }
+
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
 

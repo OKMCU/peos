@@ -15,12 +15,11 @@
  * Single-Thread Kernel
  ******************************************************************************/
 #define ST_ASSERT_EN
-#define ST_ARGCHK_EN                        // Enable arguments check
 #define ST_MSG_EN
 #define ST_CLOCK_EN
 #define ST_TIMER_EN
 #define ST_TIMER_USE_HEAP
-#define ST_TIMER_MAX          8             // meaningless if ST_TIMER_STATIC_EN == 0
+#define ST_TIMER_MAX          8             // meaningless if defined ST_TIMER_USE_HEAP 
 #define ST_MEM_EN
 
 #define ST_TASK_EVENT_MAX     32            // should be 8, 16 or 32
@@ -58,8 +57,8 @@
 /*******************************************************************************
  * Single-Thread Components - FIFO buffer
  ******************************************************************************/
-#define ST_FIFO_EN
-#ifdef  ST_FIFO_EN
+#define ST_USING_FIFO
+#ifdef  ST_USING_FIFO
 #define FIFO_PAGE_SIZE          64
 #endif
 
@@ -135,3 +134,4 @@
 
 #endif
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+

@@ -13,6 +13,7 @@
 #include "stm32f3xx_ll_gpio.h"
 #include "hal_pin.h"
 
+#ifdef ST_USING_HAL_PIN
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -203,4 +204,6 @@ st_uint8_t hal_pin_read( st_uint8_t pin )
 
 /* Private function implementations ------------------------------------------*/
 
+#endif //ST_USING_HAL_PIN
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+

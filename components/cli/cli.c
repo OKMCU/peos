@@ -1,18 +1,36 @@
-
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ *
+ ******************************************************************************/
+ 
+ /* Includes ------------------------------------------------------------------*/
 #include "st.h"
 #include "hal_drivers.h"
 #include "components/cli/cli.h"
 #include "components/fifo/fifo.h"
 
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
+/* Private macro -------------------------------------------------------------*/
+//#define IS_CHAR(x)  ( x > 0 && x <= 127 )
+
+/* Private variables ---------------------------------------------------------*/
 static void *tx_fifo;
 static char *rx_buff;
 static cli_cmd_t *cmd;
 static st_uint8_t cli_task_id;
-//#define IS_CHAR(x)  ( x > 0 && x <= 127 )
 
+/* Private function prototypes -----------------------------------------------*/
 static void cli_uart_driver_callback( st_uint8_t event );
 
-
+/* Exported function implementations -----------------------------------------*/
 void cli_init( st_uint8_t task_id )
 {
     cli_task_id = task_id;
@@ -195,7 +213,7 @@ extern void hal_cli_print_hex32(uint32_t num)
 }
 #endif
 
-
+/* Private function implementations ------------------------------------------*/
 static void cli_uart_driver_callback( st_uint8_t event )
 {
     st_uint8_t size;
@@ -251,4 +269,4 @@ static void cli_uart_driver_callback( st_uint8_t event )
     }
 }
 
-
+/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

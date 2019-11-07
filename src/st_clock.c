@@ -27,6 +27,21 @@ void __st_clock_init( void );
 st_uint8_t __st_clock_update( void );
 
 /* Exported function implementations -----------------------------------------*/
+void st_clock_get     ( ST_CLOCK_t *clock )
+{
+    ST_ASSERT( clock != NULL );
+    clock->tick[0] = sysclock.tick[0];
+    clock->tick[1] = sysclock.tick[1];
+}
+
+void st_clock_set     ( const ST_CLOCK_t *clock )
+{
+    ST_ASSERT( clock != NULL );
+    sysclock.tick[0] = clock->tick[0];
+    sysclock.tick[1] = clock->tick[1];
+}
+
+/* Private function implementations ------------------------------------------*/
 void __st_clock_init( void )
 {
     sysclock.tick[0] = 0;
@@ -56,32 +71,6 @@ st_uint8_t __st_clock_update( void )
     return delta_systick;
 }
 
-void st_clock_get     ( ST_CLOCK_t *clock )
-{
-    ST_ASSERT( clock != NULL );
-    clock->tick[0] = sysclock.tick[0];
-    clock->tick[1] = sysclock.tick[1];
-}
-
-void st_clock_set     ( const ST_CLOCK_t *clock )
-{
-    ST_ASSERT( clock != NULL );
-    sysclock.tick[0] = clock->tick[0];
-    sysclock.tick[1] = clock->tick[1];
-}
-
-/* Private function implementations ------------------------------------------*/
-
 #endif /* (ST_CLOCK_EN > 0) */
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
-
-
-
-
-
-
-
-
-
-
 

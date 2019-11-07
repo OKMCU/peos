@@ -1,34 +1,33 @@
-/******************************************************************************
-
- @file  
-
- @brief 
-
- Group: 
- Target Device: 
-
- ******************************************************************************
+/*******************************************************************************
+ * Copyright (c) 2019-2020, Single-Thread Development Team
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Change Logs:
+ * Date         Author       Notes
+ * 2019-10-28   Wentao SUN   first version
+ *
+ ******************************************************************************/
  
+/* Includes ------------------------------------------------------------------*/
+#include "st.h"
+#include "components/utilities/stringx.h"
 
- ******************************************************************************
- Release Name: 
- Release Date: 2016-06-09 06:57:09
- *****************************************************************************/
-#include "stdint.h"
-#include "stringx.h"
-#include "stdstr.h"
-
+/* Exported variables --------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
+/* Private macro -------------------------------------------------------------*/
 #define SWAP(a, b)  a ^= b; b ^= a; a ^= b
 
-extern uint8_t hexstr2uint(const char *str, uint32_t *num)
+st_uint8_t hexstr2uint(const char *str, st_uint32_t *num)
 {
     char ch;
-    uint8_t cnt = 0;
-    uint8_t lenPrefix = 0;
-    uint32_t val = 0;
-    int32_t test_09;
-    int32_t test_AF;
-    int32_t test_af;
+    st_uint8_t cnt = 0;
+    st_uint8_t lenPrefix = 0;
+    st_uint32_t val = 0;
+    st_int32_t test_09;
+    st_int32_t test_AF;
+    st_int32_t test_af;
     
     if(str[0] == '0')
     {
@@ -94,11 +93,11 @@ extern uint8_t hexstr2uint(const char *str, uint32_t *num)
     return cnt;
 }
 
-extern uint8_t decstr2uint(const char *str, uint32_t *num)
+st_uint8_t decstr2uint(const char *str, st_uint32_t *num)
 {
     char ch;
-    uint8_t cnt = 0;
-    uint32_t val = 0;
+    st_uint8_t cnt = 0;
+    st_uint32_t val = 0;
 
     
 
@@ -138,11 +137,11 @@ extern uint8_t decstr2uint(const char *str, uint32_t *num)
     return cnt;
 }
 
-extern uint8_t decstr2sint(const char *str, int32_t *num)
+st_uint8_t decstr2sint(const char *str, st_int32_t *num)
 {
-    int32_t val = 0;
-    uint32_t u32tmp;
-    uint8_t cnt;
+    st_int32_t val = 0;
+    st_uint32_t u32tmp;
+    st_uint8_t cnt;
     
     if(str[0] == '-')
     {
@@ -157,21 +156,21 @@ extern uint8_t decstr2sint(const char *str, int32_t *num)
     {
         if(str[0] == '-')
         {
-            if(u32tmp > (uint32_t)INT32_MAX + 1)
+            if(u32tmp > (st_uint32_t)INT32_MAX + 1)
             {
                 return 0;
             }
-            val = (int32_t)u32tmp;
+            val = (st_int32_t)u32tmp;
             val =-val;
             cnt++;
         }
         else
         {
-            if(u32tmp > (uint32_t)INT32_MAX)
+            if(u32tmp > (st_uint32_t)INT32_MAX)
             {
                 return 0;
             }
-            val = (int32_t)u32tmp;
+            val = (st_int32_t)u32tmp;
         }
         
         if(num)
@@ -184,23 +183,23 @@ extern uint8_t decstr2sint(const char *str, int32_t *num)
     return  cnt;
 }
 
-extern uint8_t tostr_sint(int32_t num, char *str)
+st_uint8_t tostr_sint(st_int32_t num, char *str)
 {
-    uint8_t numLen = 0;
-    uint8_t i;
-    uint8_t j;
-    int8_t flag;
-    uint32_t absNum;
+    st_uint8_t numLen = 0;
+    st_uint8_t i;
+    st_uint8_t j;
+    st_int8_t flag;
+    st_uint32_t absNum;
     
     if(num < 0)
     {
         flag = -1;
-        absNum = (uint32_t)(-num);
+        absNum = (st_uint32_t)(-num);
     }
     else
     {
         flag = 1;
-        absNum = (uint32_t)num;
+        absNum = (st_uint32_t)num;
     }
     
     do{
@@ -237,11 +236,11 @@ extern uint8_t tostr_sint(int32_t num, char *str)
     return numLen;
 }
 
-extern uint8_t tostr_uint(uint32_t num, char *str)
+st_uint8_t tostr_uint(st_uint32_t num, char *str)
 {
-    uint8_t numLen = 0;
-    uint8_t i;
-    uint8_t j;
+    st_uint8_t numLen = 0;
+    st_uint8_t i;
+    st_uint8_t j;
     
     do{
         str[numLen++] = '0' + (num%10);
@@ -272,7 +271,7 @@ extern uint8_t tostr_uint(uint32_t num, char *str)
     return numLen;
 }
 
-extern uint8_t tostr_hex8(uint8_t num, char *str)
+st_uint8_t tostr_hex8(st_uint8_t num, char *str)
 {
     str[0] = num >> 4;
     str[1] = num & 0x0F;
@@ -283,9 +282,9 @@ extern uint8_t tostr_hex8(uint8_t num, char *str)
     return HEX8_STR_LEN_MAX;
 }
 
-extern uint8_t tostr_hex16(uint16_t num, char *str)
+st_uint8_t tostr_hex16(st_uint16_t num, char *str)
 {
-    int8_t i;
+    st_int8_t i;
     
     for(i = HEX16_STR_LEN_MAX-1; i >=0; i--)
     {
@@ -297,9 +296,9 @@ extern uint8_t tostr_hex16(uint16_t num, char *str)
     return HEX16_STR_LEN_MAX;
 }
 
-extern uint8_t tostr_hex32(uint32_t num, char *str)
+st_uint8_t tostr_hex32(st_uint32_t num, char *str)
 {
-    int8_t i;
+    st_int8_t i;
     
     for(i = HEX32_STR_LEN_MAX-1; i >=0; i--)
     {
@@ -311,7 +310,7 @@ extern uint8_t tostr_hex32(uint32_t num, char *str)
     return HEX32_STR_LEN_MAX;
 }
 
-extern char *str_starts_with(char *str1, const char *str2)
+char *str_starts_with(char *str1, const char *str2)
 {
     if(str1 != NULL && str2 != NULL)
     {
@@ -336,10 +335,10 @@ extern char *str_starts_with(char *str1, const char *str2)
     return NULL;
 }
 
-extern char *str_ends_with(char *str1, const char *str2)
+char *str_ends_with(char *str1, const char *str2)
 {
-    uint16_t len1;
-    uint16_t len2;
+    st_uint16_t len1;
+    st_uint16_t len2;
 
     if(str1 != NULL && str2 != NULL)
     {

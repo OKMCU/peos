@@ -281,3 +281,4 @@ st_uint32_t st_timer_query( st_uint8_t task_id, st_int8_t event_id );
 
 #endif //__ST_H__
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+
