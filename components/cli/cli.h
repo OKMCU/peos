@@ -24,7 +24,7 @@ extern "C" {
 typedef struct {
     char *string;
     void (*handler)( st_uint8_t argc, char **argv );
-} cli_cmd_t;
+} cli_cmd_mapping_t;
 
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
@@ -34,7 +34,7 @@ void cli_task( st_int8_t event_id );
 
 void cli_enable( void );
 void cli_disable( void );
-void cli_register_cmds( const cli_cmd_t *cmd );
+void cli_register_cmds( const cli_cmd_mapping_t *cmd );
 void cli_print_char( char ch );
 void cli_print_str( const char *s );
 void cli_print_sint( st_int32_t num );

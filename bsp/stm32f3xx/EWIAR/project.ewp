@@ -996,6 +996,9 @@
     <file>
       <name>$PROJ_DIR$\..\..\..\components\utilities\rbuf.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\components\utilities\stringx.c</name>
+    </file>
   </group>
   <group>
     <name>hal</name>

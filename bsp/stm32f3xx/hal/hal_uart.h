@@ -28,6 +28,7 @@ extern "C" {
 #define HAL_UART_EVENT_TXD                       1  // transmitted one or more bytes, tx buffer is not full
 #define HAL_UART_EVENT_OVF                       2  // received buffer overflow
 #define HAL_UART_EVENT_PERR                      3  // parity error
+#define HAL_UART_EVENT_IDLE                      4  // received IDLE frame
 
 #define HAL_UART_BAUD_RATE_2400                  2400
 #define HAL_UART_BAUD_RATE_4800                  4800

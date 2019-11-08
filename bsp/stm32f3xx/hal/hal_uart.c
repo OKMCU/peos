@@ -31,6 +31,8 @@
 #define TASK_EVT_UART1_PERR         3
 #define TASK_EVT_UART0_OVF          4
 #define TASK_EVT_UART1_OVF          5
+#define TASK_EVT_UART0_IDLE         6
+#define TASK_EVT_UART1_IDLE         7
 
 #define TASK_EVT_UART0_TXD          0
 #define TASK_EVT_UART1_TXD          1
@@ -59,6 +61,7 @@ typedef struct {
     st_uint8_t txd;
     st_uint8_t ovf;
     st_uint8_t perr;
+    st_uint8_t idle;
 } uart_event_t;
 
 /* Private macro -------------------------------------------------------------*/
@@ -101,6 +104,7 @@ static uart_event_t const uart_event[HAL_UART_PORT_MAX] = {
         .txd = TASK_EVT_UART0_TXD,
         .ovf = TASK_EVT_UART0_OVF,
         .perr = TASK_EVT_UART0_PERR,
+        .idle = TASK_EVT_UART0_IDLE,
     },
 
     {
@@ -108,6 +112,7 @@ static uart_event_t const uart_event[HAL_UART_PORT_MAX] = {
         .txd = TASK_EVT_UART1_TXD,
         .ovf = TASK_EVT_UART1_OVF,
         .perr = TASK_EVT_UART1_PERR,
+        .idle = TASK_EVT_UART1_IDLE,
     },
 };
 
@@ -157,6 +162,16 @@ void hal_uart_rxd_task( st_int8_t event_id )
         case TASK_EVT_UART1_OVF:
             if( uart_ctrl[HAL_UART_PORT_1].callback )
                 uart_ctrl[HAL_UART_PORT_1].callback( HAL_UART_EVENT_OVF );
+        break;
+
+        case TASK_EVT_UART0_IDLE:
+            if( uart_ctrl[HAL_UART_PORT_0].callback )
+                uart_ctrl[HAL_UART_PORT_0].callback( HAL_UART_EVENT_IDLE );
+        break;
+
+        case TASK_EVT_UART1_IDLE:
+            if( uart_ctrl[HAL_UART_PORT_1].callback )
+                uart_ctrl[HAL_UART_PORT_1].callback( HAL_UART_EVENT_IDLE );
         break;
     }
 }
@@ -305,6 +320,7 @@ void hal_uart_open( st_uint8_t port )
     LL_USART_EnableDirectionRx( USARTx[port] );
     LL_USART_EnableDirectionTx( USARTx[port] );
     LL_USART_EnableIT_RXNE( USARTx[port] );
+    LL_USART_EnableIT_IDLE( USARTx[port] );
     LL_USART_Enable( USARTx[port] );
 }
 
@@ -324,19 +340,21 @@ void hal_uart_putc( st_uint8_t port, st_uint8_t byte )
                          uart_ctrl[port].tx_tail, 
                          uart_cache[port].tx_cache_size) );
 
-    if( LL_USART_IsEnabledIT_TXE(USARTx[port]) )
+    if( RING_BUF_EMPTY(uart_ctrl[port].tx_head, uart_ctrl[port].tx_tail) &&
+        LL_USART_IsActiveFlag_TXE(USARTx[port]) )
+    {
+        LL_USART_TransmitData8( USARTx[port], byte );
+        LL_USART_EnableIT_TXE( USARTx[port] );
+    }
+    else
     {
         LL_USART_DisableIT_TXE( USARTx[port] );
         RING_BUF_PUT( byte,
                       uart_ctrl[port].tx_head, 
                       uart_cache[port].tx_cache, 
                       uart_cache[port].tx_cache_size );
+        LL_USART_EnableIT_TXE( USARTx[port] );
     }
-    else
-    {
-        LL_USART_TransmitData8( USARTx[port], byte );
-    }
-    LL_USART_EnableIT_TXE( USARTx[port] );
 }
 
 /**
@@ -393,9 +411,11 @@ void hal_uart_close( st_uint8_t port )
 {
     ST_ASSERT( port < HAL_UART_PORT_MAX );
     ST_ASSERT( LL_USART_IsEnabled(USARTx[port]) );
-    
+
+    LL_USART_DisableDirectionTx( USARTx[port] );
     LL_USART_DisableDirectionRx( USARTx[port] );
     LL_USART_DisableIT_RXNE( USARTx[port] );
+    LL_USART_DisableIT_IDLE( USARTx[port] );
     LL_USART_Disable( USARTx[port] );
 
     switch ( port )
@@ -451,8 +471,23 @@ static void hal_uart_isr( st_uint8_t port )
                           uart_cache[port].rx_cache_size );
             st_task_set_event( task_id_rxd, uart_event[port].rxd );
         }
+        return;
     }
 
+    if( LL_USART_IsActiveFlag_PE(USARTx[port]) )
+    {
+        st_task_set_event( task_id_rxd, uart_event[port].perr );
+        LL_USART_ClearFlag_PE( USARTx[port] );
+        return;
+    }
+
+    if( LL_USART_IsActiveFlag_IDLE( USARTx[port]) )
+    {
+        st_task_set_event( task_id_rxd, uart_event[port].idle );
+        LL_USART_ClearFlag_IDLE( USARTx[port] );
+        return;
+    }
+    
     if( LL_USART_IsActiveFlag_TXE(USARTx[port]) )
     {
         if( RING_BUF_EMPTY(uart_ctrl[port].tx_head, uart_ctrl[port].tx_tail) )
@@ -465,15 +500,13 @@ static void hal_uart_isr( st_uint8_t port )
                           uart_ctrl[port].tx_tail, 
                           uart_cache[port].tx_cache, 
                           uart_cache[port].tx_cache_size );
+            LL_USART_TransmitData8( USARTx[port], byte );
             st_task_set_event( task_id_txd, uart_event[port].txd );
         }
+        return;
     }
 
-    if( LL_USART_IsActiveFlag_PE(USARTx[port]) )
-    {
-        st_task_set_event( task_id_rxd, uart_event[port].perr );
-        LL_USART_ClearFlag_PE( USARTx[port] );
-    }
+    
 }
 
 void USART1_IRQHandler( void )

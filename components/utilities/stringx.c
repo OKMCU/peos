@@ -342,12 +342,12 @@ char *str_ends_with(char *str1, const char *str2)
 
     if(str1 != NULL && str2 != NULL)
     {
-        len1 = str_len(str1);
-        len2 = str_len(str2);
+        len1 = st_strlen(str1);
+        len2 = st_strlen(str2);
 
         if(len1 >= len2)
         {
-            if(str_cmp(str1+len1-len2, str2) == 0)
+            if(st_strcmp(str1+len1-len2, str2) == 0)
             {
                 return (str1+len1-len2);
             }

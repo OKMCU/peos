@@ -39,6 +39,7 @@ void *st_msg_create ( st_uint16_t len, st_int8_t type )
         pmsg = (void *)( (st_uint8_t *)pnode_new + sizeof( ST_MSG_t ) );
         pnode_new->len = len;
         pnode_new->type = type;
+        pnode_new->next = NULL;
     }
 
     return pmsg;

@@ -45,6 +45,7 @@ typedef size_t      st_size_t;
 #define ST_EXIT_CRITICAL()          __enable_interrupt()
 #define st_memset(ptr, val, len)    memset(ptr, val, len)
 #define st_strcmp(s1, s2)           strcmp(s1, s2)
+#define st_strlen(s)                strlen(s)
 
 /* Exported variables ---------------------------------------------------------*/
 
