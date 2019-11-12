@@ -13,7 +13,11 @@
 #include "st.h"
 #include "hal_drivers.h"
 #include "components/cli/cli.h"
+
+#if CLI_TX_BUF_SIZE > 0
 #include "components/fifo/fifo.h"
+#endif
+
 #include "components/utilities/stringx.h"
 
 /* Exported variables --------------------------------------------------------*/
@@ -42,7 +46,11 @@ typedef struct cli_cmd {
 /* Private variables ---------------------------------------------------------*/
 static cli_key_t *p_cli_key;
 static cli_cmd_t *p_cli_cmd;
+
+#if CLI_TX_BUF_SIZE > 0
 static void *p_cli_tx_fifo;
+#endif
+
 static st_uint8_t cli_task_id;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,7 +67,10 @@ void cli_init( st_uint8_t task_id )
 
     p_cli_key = NULL;
     p_cli_cmd = NULL;
+
+#if CLI_TX_BUF_SIZE > 0
     p_cli_tx_fifo = NULL;
+#endif
     
     cfg.baud_rate = CLI_UART_BAUDRATE;
     cfg.data_bits = HAL_UART_DATA_BITS_8;
@@ -95,12 +106,13 @@ void cli_disable( void )
     void *p_msg;
     
     hal_uart_close( CLI_UART_PORT );
-    
+#if CLI_TX_BUF_SIZE > 0
     if( p_cli_tx_fifo )
     {
         fifo_delete( p_cli_tx_fifo );
         p_cli_tx_fifo = NULL;
     }
+#endif
 
     if( p_cli_cmd )
     {
@@ -127,6 +139,7 @@ void cli_register_cmds( const cli_cmd_mapping_t *cmd )
 
 void cli_print_char( char ch )
 {
+#if CLI_TX_BUF_SIZE > 0
     st_uint8_t *pc;
 
     if(p_cli_tx_fifo == NULL)
@@ -145,9 +158,22 @@ void cli_print_char( char ch )
     }
     else
     {
-        pc = fifo_put( p_cli_tx_fifo, (st_uint8_t)ch );
+        if( fifo_len(p_cli_tx_fifo) < CLI_TX_BUF_SIZE )
+        {
+            pc = fifo_put( p_cli_tx_fifo, (st_uint8_t)ch );
+        }
+        else
+        {
+            while( hal_uart_tx_buf_free(CLI_UART_PORT) == 0 );
+            hal_uart_putc( CLI_UART_PORT, fifo_get(p_cli_tx_fifo) );
+            pc = fifo_put( p_cli_tx_fifo, (st_uint8_t)ch );
+        }
         ST_ASSERT( pc != NULL );
     }
+#else
+    while( hal_uart_tx_buf_free(CLI_UART_PORT) == 0 );
+    hal_uart_putc( CLI_UART_PORT, ch );
+#endif
 }
 
 void cli_print_str(const char *s)
@@ -268,6 +294,8 @@ static void cli_uart_driver_callback( st_uint8_t event )
         break;
 
         case HAL_UART_EVENT_TXD:
+
+#if CLI_TX_BUF_SIZE > 0
             if( p_cli_tx_fifo )
             {
                 size = hal_uart_tx_buf_free(CLI_UART_PORT);
@@ -285,6 +313,7 @@ static void cli_uart_driver_callback( st_uint8_t event )
                     }
                 }
             }
+#endif
         break;
 
         case HAL_UART_EVENT_OVF:

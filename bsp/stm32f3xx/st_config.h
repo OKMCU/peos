@@ -70,6 +70,7 @@
 #define CLI_UART_PORT           HAL_UART_PORT_1
 #define CLI_UART_BAUDRATE       HAL_UART_BAUD_RATE_115200
 #define CLI_MAX_CMD_LENGTH      128
+#define CLI_TX_BUF_SIZE         128
 #endif
 
 
