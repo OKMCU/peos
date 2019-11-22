@@ -80,7 +80,7 @@ void cli_init( st_uint8_t task_id )
     cfg.invert    = HAL_UART_NRZ_NORMAL;
     cfg.callback  = cli_uart_driver_callback;
 
-    hal_uart_config( CLI_UART_PORT, &cfg );
+    hal_uart_open( CLI_UART_PORT, &cfg );
 }
 
 void cli_task( st_int8_t event_id )
@@ -96,6 +96,7 @@ void cli_task( st_int8_t event_id )
     st_msg_delete( p_key );
 }
 
+/*
 void cli_enable( void )
 {
     hal_uart_open( CLI_UART_PORT );
@@ -131,6 +132,7 @@ void cli_disable( void )
         st_msg_delete( p_msg );
     }
 }
+*/
 
 void cli_register_cmds( const cli_cmd_mapping_t *cmd )
 {

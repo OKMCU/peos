@@ -37,14 +37,11 @@ void demo_task( int8_t event_id )
     {
         case DEMO_TASK_EVT_PWR_ON_INIT:
 
-            cli_enable();
-        
             st_task_set_event( demo_task_id, DEMO_TASK_EVT_LED_BLINK_FAST );
             //st_timer_event_create( TASK_ID_DEMO, DEMO_TASK_EVT_LED_BLINK_FAST, 10000 );
             st_timer_create( demo_task_id, DEMO_TASK_EVT_LED_BLINK_SLOW, 10000 );
-
-            
         break;
+        
         case DEMO_TASK_EVT_LED_BLINK_FAST:
             led_blink( LED_ALL, 0, 50, 300 );
         break;
