@@ -42,9 +42,9 @@
  ******************************************************************************/
 #define ST_USING_LED
 #ifdef  ST_USING_LED
-#define LED_0_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 6 )
-#define LED_1_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 9 )
-#define LED_2_PIN               HAL_PIN_GET( HAL_GPIO_PORT_F, 10 )
+#define LED_0_PIN               HAL_PIN_GET( HAL_GPIO_PORT_B, 3 )
+//#define LED_1_PIN
+//#define LED_2_PIN
 //#define LED_3_PIN             
 //#define LED_4_PIN             
 //#define LED_5_PIN             
@@ -67,7 +67,7 @@
  ******************************************************************************/
 #define ST_USING_CLI
 #ifdef  ST_USING_CLI
-#define CLI_UART_PORT           HAL_UART_PORT_1
+#define CLI_UART_PORT           HAL_UART_PORT_0
 #define CLI_UART_BAUDRATE       HAL_UART_BAUD_RATE_115200
 #define CLI_MAX_CMD_LENGTH      128
 #define CLI_TX_BUF_SIZE         128

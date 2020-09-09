@@ -499,8 +499,6 @@ static void hal_uart_isr( st_uint8_t port )
         }
         return;
     }
-
-    
 }
 
 void USART1_IRQHandler( void )

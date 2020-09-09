@@ -38,7 +38,7 @@
 #define TASK_EVT_UART1_TXD          1
 
 #define CPU_APB1CLK                 (32000000uL)
-#define CPU_APB2CLK                 (64000000uL)
+#define CPU_APB2CLK                 (32000000uL)
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct {
@@ -68,8 +68,6 @@ typedef struct {
 /* Private variables ---------------------------------------------------------*/
 static st_uint8_t uart0_rx_cache[UART0_RX_CACHE_SIZE];
 static st_uint8_t uart0_tx_cache[UART0_TX_CACHE_SIZE];
-static st_uint8_t uart1_rx_cache[UART1_RX_CACHE_SIZE];
-static st_uint8_t uart1_tx_cache[UART1_TX_CACHE_SIZE];
 static st_uint8_t task_id_rxd;
 static st_uint8_t task_id_txd;
 
@@ -80,21 +78,13 @@ static uart_cache_t const uart_cache[HAL_UART_PORT_MAX] = {
         .rx_cache_size = sizeof(uart0_rx_cache), 
         .tx_cache_size = sizeof(uart0_tx_cache),
     },
-    { 
-        .rx_cache = uart1_rx_cache, 
-        .tx_cache = uart1_tx_cache, 
-        .rx_cache_size = sizeof(uart1_rx_cache), 
-        .tx_cache_size = sizeof(uart1_tx_cache),
-    },
 };
 
 static USART_TypeDef* const USARTx[HAL_UART_PORT_MAX] = {
-    USART1,
     USART2
 };
 
 static st_uint32_t const PeriphClk[HAL_UART_PORT_MAX] = {
-    CPU_APB2CLK,
     CPU_APB1CLK
 };
 
@@ -106,14 +96,6 @@ static uart_event_t const uart_event[HAL_UART_PORT_MAX] = {
         .perr = TASK_EVT_UART0_PERR,
         .idle = TASK_EVT_UART0_IDLE,
     },
-
-    {
-        .rxd = TASK_EVT_UART1_RXD,
-        .txd = TASK_EVT_UART1_TXD,
-        .ovf = TASK_EVT_UART1_OVF,
-        .perr = TASK_EVT_UART1_PERR,
-        .idle = TASK_EVT_UART1_IDLE,
-    },
 };
 
 static uart_ctrl_t uart_ctrl[HAL_UART_PORT_MAX] = { 0 };
@@ -121,7 +103,6 @@ static uart_ctrl_t uart_ctrl[HAL_UART_PORT_MAX] = { 0 };
 /* Private function prototypes -----------------------------------------------*/
 static void hal_uart_isr( st_uint8_t port );
 
-extern void USART1_IRQHandler( void );
 extern void USART2_IRQHandler( void );
 
 /* Exported function implementations -----------------------------------------*/
@@ -140,8 +121,6 @@ void hal_uart_rxd_task( st_int8_t event_id )
         break;
 
         case TASK_EVT_UART1_RXD:
-            if( uart_ctrl[HAL_UART_PORT_1].callback )
-                uart_ctrl[HAL_UART_PORT_1].callback( HAL_UART_EVENT_RXD );
         break;
 
         case TASK_EVT_UART0_PERR:
@@ -150,8 +129,6 @@ void hal_uart_rxd_task( st_int8_t event_id )
         break;
 
         case TASK_EVT_UART1_PERR:
-            if( uart_ctrl[HAL_UART_PORT_1].callback )
-                uart_ctrl[HAL_UART_PORT_1].callback( HAL_UART_EVENT_PERR );
         break;
 
         case TASK_EVT_UART0_OVF:
@@ -160,8 +137,6 @@ void hal_uart_rxd_task( st_int8_t event_id )
         break;
 
         case TASK_EVT_UART1_OVF:
-            if( uart_ctrl[HAL_UART_PORT_1].callback )
-                uart_ctrl[HAL_UART_PORT_1].callback( HAL_UART_EVENT_OVF );
         break;
 
         case TASK_EVT_UART0_IDLE:
@@ -170,8 +145,6 @@ void hal_uart_rxd_task( st_int8_t event_id )
         break;
 
         case TASK_EVT_UART1_IDLE:
-            if( uart_ctrl[HAL_UART_PORT_1].callback )
-                uart_ctrl[HAL_UART_PORT_1].callback( HAL_UART_EVENT_IDLE );
         break;
     }
 }
@@ -191,8 +164,6 @@ void hal_uart_txd_task( st_int8_t event_id )
         break;
 
         case TASK_EVT_UART1_TXD:
-            if( uart_ctrl[HAL_UART_PORT_1].callback )
-                uart_ctrl[HAL_UART_PORT_1].callback( HAL_UART_EVENT_TXD );
         break;
     }
 }
@@ -215,27 +186,15 @@ void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
     switch ( port )
     {
         case HAL_UART_PORT_0:
-            LL_APB2_GRP1_EnableClock( LL_APB2_GRP1_PERIPH_USART1 );
-            LL_APB2_GRP1_ForceReset( LL_APB2_GRP1_PERIPH_USART1 );
-            LL_APB2_GRP1_ReleaseReset( LL_APB2_GRP1_PERIPH_USART1 );
-            LL_GPIO_SetPinPull( GPIOE, LL_GPIO_PIN_0, LL_GPIO_PULL_UP );
-            LL_GPIO_SetPinPull( GPIOE, LL_GPIO_PIN_1, LL_GPIO_PULL_UP );
-            LL_GPIO_SetPinMode( GPIOE, LL_GPIO_PIN_0, LL_GPIO_MODE_ALTERNATE ); // PE0: USART1_TX
-            LL_GPIO_SetPinMode( GPIOE, LL_GPIO_PIN_1, LL_GPIO_MODE_ALTERNATE ); // PE1: USART1_RX
-            LL_GPIO_SetAFPin_0_7( GPIOE, LL_GPIO_PIN_0, LL_GPIO_AF_7 );         // PE0: USART1_TX
-            LL_GPIO_SetAFPin_0_7( GPIOE, LL_GPIO_PIN_1, LL_GPIO_AF_7 );         // PE1: USART1_RX
-            NVIC_EnableIRQ( USART1_IRQn );
-        break;
-        case HAL_UART_PORT_1:
             LL_APB1_GRP1_EnableClock( LL_APB1_GRP1_PERIPH_USART2 );
             LL_APB1_GRP1_ForceReset( LL_APB1_GRP1_PERIPH_USART2 );
             LL_APB1_GRP1_ReleaseReset( LL_APB1_GRP1_PERIPH_USART2 );
             LL_GPIO_SetPinPull( GPIOA, LL_GPIO_PIN_2, LL_GPIO_PULL_UP );
-            LL_GPIO_SetPinPull( GPIOA, LL_GPIO_PIN_3, LL_GPIO_PULL_UP );
-            LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ALTERNATE ); // PA2: USART2_TX
-            LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_3, LL_GPIO_MODE_ALTERNATE ); // PA3: USART2_RX
-            LL_GPIO_SetAFPin_0_7( GPIOA, LL_GPIO_PIN_2, LL_GPIO_AF_7 );         // PA2: USART2_TX
-            LL_GPIO_SetAFPin_0_7( GPIOA, LL_GPIO_PIN_3, LL_GPIO_AF_7 );         // PA3: USART2_RX
+            LL_GPIO_SetPinPull( GPIOA, LL_GPIO_PIN_15, LL_GPIO_PULL_UP );
+            LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ALTERNATE );     // PA2:  USART2_TX
+            LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_15, LL_GPIO_MODE_ALTERNATE );    // PA15: USART2_RX
+            LL_GPIO_SetAFPin_0_7( GPIOA, LL_GPIO_PIN_2, LL_GPIO_AF_4 );             // PA2:  USART2_TX
+            LL_GPIO_SetAFPin_0_7( GPIOA, LL_GPIO_PIN_15, LL_GPIO_AF_4 );             // PA15: USART2_RX
             NVIC_EnableIRQ( USART2_IRQn );
         break;
     }
@@ -415,21 +374,12 @@ void hal_uart_close( st_uint8_t port )
     switch ( port )
     {
         case HAL_UART_PORT_0:
-            NVIC_DisableIRQ( USART1_IRQn );
-            LL_GPIO_SetPinMode( GPIOE, LL_GPIO_PIN_0, LL_GPIO_MODE_ANALOG ); // PE0: USART1_TX
-            LL_GPIO_SetPinMode( GPIOE, LL_GPIO_PIN_1, LL_GPIO_MODE_ANALOG ); // PE1: USART1_RX
-            LL_GPIO_SetPinPull( GPIOE, LL_GPIO_PIN_0, LL_GPIO_PULL_NO );
-            LL_GPIO_SetPinPull( GPIOE, LL_GPIO_PIN_1, LL_GPIO_PULL_NO );
-            LL_APB2_GRP1_DisableClock( LL_APB2_GRP1_PERIPH_USART1 );
-        break;
-
-        case HAL_UART_PORT_1:
             NVIC_DisableIRQ( USART2_IRQn );
             LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ANALOG ); // PA2: USART2_TX
-            LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_3, LL_GPIO_MODE_ANALOG ); // PA3: USART2_RX
+            LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_15, LL_GPIO_MODE_ANALOG ); // PA15: USART2_RX
             LL_GPIO_SetPinPull( GPIOA, LL_GPIO_PIN_2, LL_GPIO_PULL_NO );
-            LL_GPIO_SetPinPull( GPIOA, LL_GPIO_PIN_3, LL_GPIO_PULL_NO );
-            LL_APB1_GRP1_DisableClock( LL_APB1_GRP1_PERIPH_USART2 );
+            LL_GPIO_SetPinPull( GPIOA, LL_GPIO_PIN_15, LL_GPIO_PULL_NO );
+            LL_APB2_GRP1_DisableClock( LL_APB1_GRP1_PERIPH_USART2 );
         break;
     }
 }
@@ -503,14 +453,9 @@ static void hal_uart_isr( st_uint8_t port )
     
 }
 
-void USART1_IRQHandler( void )
-{
-    hal_uart_isr( HAL_UART_PORT_0 );
-}
-
 void USART2_IRQHandler( void )
 {
-    hal_uart_isr( HAL_UART_PORT_1 );
+    hal_uart_isr( HAL_UART_PORT_0 );
 }
 #endif //ST_USING_HAL_UART
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

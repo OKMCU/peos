@@ -1006,6 +1006,9 @@
       <name>$PROJ_DIR$\..\hal\board.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\hal\hal_i2c_slave.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\hal\hal_pin.c</name>
     </file>
     <file>

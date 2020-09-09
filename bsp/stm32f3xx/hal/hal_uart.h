@@ -20,9 +20,12 @@ extern "C" {
 #include "st.h"
 
 /* Exported define ------------------------------------------------------------*/
-#define HAL_UART_PORT_0                          0
-#define HAL_UART_PORT_1                          1
-#define HAL_UART_PORT_MAX                        2
+
+enum {
+    HAL_UART_PORT_0 = 0,
+    HAL_UART_PORT_1,
+    HAL_UART_PORT_MAX
+};
 
 #define HAL_UART_EVENT_RXD                       0  // received one or more bytes, rx buffer is not empty
 #define HAL_UART_EVENT_TXD                       1  // transmitted one or more bytes, tx buffer is not full

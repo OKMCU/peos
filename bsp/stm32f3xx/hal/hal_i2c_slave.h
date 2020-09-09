@@ -20,9 +20,11 @@ extern "C" {
 #include "st.h"
 
 /* Exported define ------------------------------------------------------------*/
-#define HAL_I2CS_PORT_0                          0
-#define HAL_I2CS_PORT_1                          1
-#define HAL_I2CS_PORT_MAX                        2
+enum {
+    HAL_I2CS_PORT_0 = 0,
+    HAL_I2CS_PORT_1,
+    HAL_I2CS_PORT_MAX
+};
 
 #define HAL_I2CS_ADDR_MAX                        2
 
@@ -38,7 +40,7 @@ typedef struct {
     st_uint8_t addr[HAL_I2CS_ADDR_MAX];
     st_uint8_t general_call_en  : 1;
     st_uint8_t reserved         : 7;
-    void (*callback)( st_uint8_t event );
+    void (*callback[HAL_I2CS_ADDR_MAX])( st_uint8_t event );
 } hal_i2cs_config_t;
 
 /* Exported macro -------------------------------------------------------------*/
@@ -49,11 +51,7 @@ void hal_i2cs_port0_task( st_int8_t event_id );
 void hal_i2cs_port1_init( st_uint8_t task_id );
 void hal_i2cs_port1_task( st_int8_t event_id );
 
-void hal_i2cs_config( st_uint8_t port, const hal_i2cs_config_t *cfg );
-void hal_i2cs_open( st_uint8_t port );
-st_uint8_t hal_i2cs_set_addr( st_uint8_t port, st_uint8_t addr_id, st_uint8_t addr );
-st_uint8_t hal_i2cs_get_addr( st_uint8_t port, st_uint8_t addr_id );
-st_uint8_t hal_i2cs_matched_addr( st_uint8_t port );
+void hal_i2cs_open( st_uint8_t port, const hal_i2cs_config_t *cfg );
 void hal_i2cs_putc( st_uint8_t port, st_uint8_t byte );
 st_uint8_t hal_i2cs_getc( st_uint8_t port );
 st_uint8_t hal_i2cs_tx_buf_free_size( st_uint8_t port );
