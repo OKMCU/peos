@@ -194,7 +194,7 @@ void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg )
             LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ALTERNATE );     // PA2:  USART2_TX
             LL_GPIO_SetPinMode( GPIOA, LL_GPIO_PIN_15, LL_GPIO_MODE_ALTERNATE );    // PA15: USART2_RX
             LL_GPIO_SetAFPin_0_7( GPIOA, LL_GPIO_PIN_2, LL_GPIO_AF_4 );             // PA2:  USART2_TX
-            LL_GPIO_SetAFPin_0_7( GPIOA, LL_GPIO_PIN_15, LL_GPIO_AF_4 );             // PA15: USART2_RX
+            LL_GPIO_SetAFPin_8_15( GPIOA, LL_GPIO_PIN_15, LL_GPIO_AF_4 );           // PA15: USART2_RX
             NVIC_EnableIRQ( USART2_IRQn );
         break;
     }

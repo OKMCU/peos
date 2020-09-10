@@ -95,7 +95,8 @@ void st_board_init( void )
     LL_IOP_GRP1_EnableClock( LL_IOP_GRP1_PERIPH_GPIOA );
     LL_IOP_GRP1_EnableClock( LL_IOP_GRP1_PERIPH_GPIOB );
     LL_IOP_GRP1_EnableClock( LL_IOP_GRP1_PERIPH_GPIOC );
-    
+
+    NVIC_SetPriority(USART2_IRQn, 0);
     //NVIC_SetPriority( I2C1_IRQn,      0 ); // Priority 0 (Highest)
     //NVIC_SetPriority( ADC1_COMP_IRQn, 3 ); // Priority 3 (Lowest)
     //NVIC_SetPriority( EXTI4_15_IRQn,  2 ); // Priority 2
