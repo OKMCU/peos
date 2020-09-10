@@ -270,7 +270,7 @@ static void cli_uart_driver_callback( st_uint8_t event )
     {
         case HAL_UART_EVENT_RXD:
             size = hal_uart_rx_buf_used(CLI_UART_PORT);
-            if( size )
+            for( i = 0; i < size; i++ )
             {
                 if( p_cli_key == NULL )
                 {
@@ -280,15 +280,17 @@ static void cli_uart_driver_callback( st_uint8_t event )
                         p_cli_key->len = 0;
                     }
                 }
-
-                for( i = 0; i < size; i++ )
+                
+                if( p_cli_key )
                 {
                     byte = hal_uart_getc(CLI_UART_PORT);
-                    if( p_cli_key )
+                    if( p_cli_key->len < CLI_MAX_KEY_LEN )
                     {
-                        if( p_cli_key->len < CLI_MAX_KEY_LEN )
+                        p_cli_key->val[p_cli_key->len++] = byte;
+                        if(p_cli_key->len == CLI_MAX_KEY_LEN)
                         {
-                            p_cli_key->val[p_cli_key->len++] = byte;
+                            st_msg_send( p_cli_key, cli_task_id );
+                            p_cli_key = NULL;
                         }
                     }
                 }
