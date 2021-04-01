@@ -10,7 +10,7 @@
  ******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 #include "hal_drivers.h"
 #include "components/led/led.h"
 
@@ -21,32 +21,32 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct {
-  st_uint8_t mode;       /* Operation mode */
-  st_uint8_t left;       /* Blink cycles left */
-  st_uint8_t onPct;      /* On cycle percentage */
-  st_uint16_t time;      /* On/off cycle time (msec) */
-  st_uint32_t next;      /* Time for next change */
+  os_uint8_t mode;       /* Operation mode */
+  os_uint8_t left;       /* Blink cycles left */
+  os_uint8_t onPct;      /* On cycle percentage */
+  os_uint16_t time;      /* On/off cycle time (msec) */
+  os_uint32_t next;      /* Time for next change */
 } HalLedControl_t;       /* LED control structure */
 
 typedef struct
 {
   HalLedControl_t HalLedControlTable[LED_MAX];
-  st_uint8_t           sleepActive;
+  os_uint8_t           sleepActive;
 } HalLedStatus_t;
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static st_uint8_t led_task_id;
-static st_uint8_t HalLedState;              // LED state at last set/clr/blink update
-static st_uint8_t HalSleepLedState;         // LED state at last set/clr/blink update
-static st_uint8_t preBlinkState;            // Original State before going to blink mode
+static os_uint8_t led_task_id;
+static os_uint8_t HalLedState;              // LED state at last set/clr/blink update
+static os_uint8_t HalSleepLedState;         // LED state at last set/clr/blink update
+static os_uint8_t preBlinkState;            // Original State before going to blink mode
                                             // bit 0, 1, 2, 3 represent led 0, 1, 2, 3
 #if ( LED_BLINK_EN > 0 )
 static HalLedStatus_t HalLedStatusControl;
 #endif
 
 /* Private function prototypes -----------------------------------------------*/
-static void led_on_off ( st_uint8_t leds, st_uint8_t mode );
+static void led_on_off ( os_uint8_t leds, os_uint8_t mode );
 static void led_task_update ( void );
 
 /* Exported function implementations -----------------------------------------*/
@@ -59,7 +59,7 @@ static void led_task_update ( void );
  *
  * @return  None
  ***************************************************************************************************/
-void led_init ( st_uint8_t task_id )
+void led_init ( os_uint8_t task_id )
 {
     led_task_id = task_id;
     
@@ -110,7 +110,7 @@ void led_init ( st_uint8_t task_id )
 
 }
 
-void led_task( st_int8_t event_id )
+void led_task( os_int8_t event_id )
 {
     switch ( event_id )
     {
@@ -129,10 +129,10 @@ void led_task( st_int8_t event_id )
  *          mode - BLINK, FLASH, TOGGLE, ON, OFF
  * @return  None
  ***************************************************************************************************/
-st_uint8_t led_set ( st_uint8_t leds, st_uint8_t mode )
+os_uint8_t led_set ( os_uint8_t leds, os_uint8_t mode )
 {
 #if ( LED_BLINK_EN > 0 )
-  st_uint8_t led;
+  os_uint8_t led;
   HalLedControl_t *sts;
 
   switch (mode)
@@ -198,12 +198,12 @@ st_uint8_t led_set ( st_uint8_t leds, st_uint8_t mode )
  *
  * @return  None
  ***************************************************************************************************/
-void led_blink ( st_uint8_t leds, st_uint8_t numBlinks, st_uint8_t percent, st_uint16_t period)
+void led_blink ( os_uint8_t leds, os_uint8_t numBlinks, os_uint8_t percent, os_uint16_t period)
 {
 #if ( LED_BLINK_EN > 0 )
-  ST_CLOCK_t clock;
+  OS_CLOCK_t clock;
   HalLedControl_t *sts;
-  st_uint8_t led;
+  os_uint8_t led;
 
   if (leds && percent && period)
   {
@@ -226,7 +226,7 @@ void led_blink ( st_uint8_t leds, st_uint8_t numBlinks, st_uint8_t percent, st_u
           sts->onPct = percent;                             /* % of cycle LED is on */
           sts->left  = numBlinks;                           /* Number of blink cycles */
           if (!numBlinks) sts->mode |= LED_MODE_FLASH;      /* Continuous */
-          st_clock_get( &clock );
+          os_clock_get( &clock );
           sts->next = clock.tick[0];                        /* Start now */
           sts->mode |= LED_MODE_BLINK;                      /* Enable blinking */
           leds ^= led;
@@ -235,8 +235,8 @@ void led_blink ( st_uint8_t leds, st_uint8_t numBlinks, st_uint8_t percent, st_u
         sts++;
       }
       // Cancel any overlapping timer for blink events
-      st_timer_delete( led_task_id, LED_TASK_EVT_UPDATE );
-      st_task_set_event ( led_task_id, LED_TASK_EVT_UPDATE );
+      os_timer_delete( led_task_id, LED_TASK_EVT_UPDATE );
+      os_task_set_event ( led_task_id, LED_TASK_EVT_UPDATE );
     }
     else
     {
@@ -262,7 +262,7 @@ void led_blink ( st_uint8_t leds, st_uint8_t numBlinks, st_uint8_t percent, st_u
  *
  * @return  led state
  ***************************************************************************************************/
-st_uint8_t led_get_state ()
+os_uint8_t led_get_state ()
 {
   return HalLedState;
 }
@@ -305,7 +305,7 @@ void led_exit_sleep( void )
   led_on_off(HalSleepLedState, LED_MODE_ON);
 
   /* Restart - This takes care BLINKING LEDS */
-  st_task_set_event( led_task_id, LED_TASK_EVT_UPDATE );
+  os_task_set_event( led_task_id, LED_TASK_EVT_UPDATE );
 
 #if ( LED_BLINK_EN > 0 )
   /* Sleep OFF */
@@ -324,7 +324,7 @@ void led_exit_sleep( void )
  *
  * @return  none
  ***************************************************************************************************/
-static void led_on_off (st_uint8_t leds, st_uint8_t mode)
+static void led_on_off (os_uint8_t leds, os_uint8_t mode)
 {
 #ifdef LED_0_PIN
     if (leds & LED_0)
@@ -412,14 +412,14 @@ static void led_on_off (st_uint8_t leds, st_uint8_t mode)
  ***************************************************************************************************/
 static void led_task_update (void)
 {
-  ST_CLOCK_t clock;
-  st_uint32_t time;
+  OS_CLOCK_t clock;
+  os_uint32_t time;
   HalLedControl_t *sts;
-  st_uint16_t next;
-  st_uint16_t wait;
-  st_uint8_t led;
-  st_uint8_t pct;
-  st_uint8_t leds;
+  os_uint16_t next;
+  os_uint16_t wait;
+  os_uint8_t led;
+  os_uint8_t pct;
+  os_uint8_t leds;
   
 
   next = 0;
@@ -436,7 +436,7 @@ static void led_task_update (void)
       {
         if (sts->mode & LED_MODE_BLINK)
         {
-          st_clock_get( &clock );
+          os_clock_get( &clock );
           time = clock.tick[0];
           if (time >= sts->next)
           {
@@ -463,7 +463,7 @@ static void led_task_update (void)
             }
             if (sts->mode & LED_MODE_BLINK)
             {
-              wait = (((st_uint32_t)pct * (st_uint32_t)sts->time) / 100);
+              wait = (((os_uint32_t)pct * (os_uint32_t)sts->time) / 100);
               sts->next = time + wait;
             }
             else
@@ -494,7 +494,7 @@ static void led_task_update (void)
 
     if (next)
     {
-      st_timer_create( led_task_id, LED_TASK_EVT_UPDATE, next );/* Schedule event */
+      os_timer_create( led_task_id, LED_TASK_EVT_UPDATE, next );/* Schedule event */
     }
   }
 }

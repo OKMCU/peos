@@ -17,23 +17,23 @@ extern "C" {
 #endif
 
 /* Includes -------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 
 /* Exported define ------------------------------------------------------------*/  
 /* Exported typedef -----------------------------------------------------------*/
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-void st_board_init( void );
-void st_board_idle( void );
-#ifdef ST_ASSERT_EN
-void st_assert_failed(char *file, st_uint32_t line);
+void os_board_init( void );
+void os_board_idle( void );
+#ifdef OS_ASSERT_EN
+void os_assert_failed(char *file, os_uint32_t line);
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__ST_BOARD_H__
+#endif //__OS_BOARD_H__
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
 

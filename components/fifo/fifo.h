@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /* Includes -------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 
 /* Exported define ------------------------------------------------------------*/
 /* Exported typedef -----------------------------------------------------------*/
@@ -26,9 +26,9 @@ extern "C" {
 /* Exported function prototypes -----------------------------------------------*/
 void *fifo_create(void);
 void fifo_delete(void *fifo);
-st_uint8_t *fifo_put(void *fifo, st_uint8_t byte);
-st_uint32_t fifo_len(void *fifo);
-st_uint8_t fifo_get(void *fifo);
+os_uint8_t *fifo_put(void *fifo, os_uint8_t byte);
+os_uint32_t fifo_len(void *fifo);
+os_uint8_t fifo_get(void *fifo);
 
 #ifdef __cplusplus
 }

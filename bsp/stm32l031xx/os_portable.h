@@ -9,8 +9,8 @@
  *
  ******************************************************************************/
  
-#ifndef __ST_PORTABLE_H__
-#define __ST_PORTABLE_H__
+#ifndef __OS_PORTABLE_H__
+#define __OS_PORTABLE_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,7 +20,7 @@ extern "C" {
 #include <intrinsics.h>
 #include <stdint.h>
 #include <string.h>
-#include "st_config.h"
+#include "os_config.h"
 
 /* Exported define ------------------------------------------------------------*/  
 #define __IRAM                            
@@ -30,22 +30,22 @@ extern "C" {
 #define __PACKED
 
 /* Exported typedef -----------------------------------------------------------*/
-typedef uint8_t     st_uint8_t;
-typedef uint16_t    st_uint16_t;
-typedef uint32_t    st_uint32_t;
-typedef int8_t      st_int8_t;
-typedef int16_t     st_int16_t;
-typedef int32_t     st_int32_t;
-typedef float       st_fpt32_t;
-typedef double      st_fpt64_t;
-typedef size_t      st_size_t;
+typedef uint8_t     os_uint8_t;
+typedef uint16_t    os_uint16_t;
+typedef uint32_t    os_uint32_t;
+typedef int8_t      os_int8_t;
+typedef int16_t     os_int16_t;
+typedef int32_t     os_int32_t;
+typedef float       os_fpt32_t;
+typedef double      os_fpt64_t;
+typedef size_t      os_size_t;
 
 /* Exported macro -------------------------------------------------------------*/
-#define ST_ENTER_CRITICAL()         __disable_interrupt()
-#define ST_EXIT_CRITICAL()          __enable_interrupt()
-#define st_memset(ptr, val, len)    memset(ptr, val, len)
-#define st_strcmp(s1, s2)           strcmp(s1, s2)
-#define st_strlen(s)                strlen(s)
+#define OS_ENTER_CRITICAL()         __disable_interrupt()
+#define OS_EXIT_CRITICAL()          __enable_interrupt()
+#define os_memset(ptr, val, len)    memset(ptr, val, len)
+#define os_strcmp(s1, s2)           strcmp(s1, s2)
+#define os_strlen(s)                strlen(s)
 
 /* Exported variables ---------------------------------------------------------*/
 
@@ -54,6 +54,6 @@ typedef size_t      st_size_t;
 }
 #endif
 
-#endif //__ST_PORTABLE_H__
+#endif //__OS_PORTABLE_H__
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
 

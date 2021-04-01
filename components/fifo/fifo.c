@@ -10,21 +10,21 @@
  ******************************************************************************/
  
 /* Includes ------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 #include "components/fifo/fifo.h"
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 typedef struct FIFOPage {
-    st_uint8_t buf[FIFO_PAGE_SIZE];
-    st_uint16_t head;
-    st_uint16_t tail;
+    os_uint8_t buf[FIFO_PAGE_SIZE];
+    os_uint16_t head;
+    os_uint16_t tail;
     struct FIFOPage *nextPage;
 } FIFOPage_t;
 
 typedef struct {
-    st_uint32_t datalen;
+    os_uint32_t datalen;
     FIFOPage_t *headPage;
     FIFOPage_t *tailPage;
 } FIFOHandle_t;
@@ -37,10 +37,10 @@ void *fifo_create(void)
 {
     void *handle;
     
-    handle = st_mem_alloc(sizeof(FIFOHandle_t));
+    handle = os_mem_alloc(sizeof(FIFOHandle_t));
     if(handle != NULL)
     {
-        st_memset(handle, 0x00, sizeof(FIFOHandle_t));
+        os_memset(handle, 0x00, sizeof(FIFOHandle_t));
     }
     
     return handle;
@@ -55,24 +55,24 @@ void fifo_delete(void *fifo)
     while(fifoHandle->headPage != NULL)
     {
         fifoPageSav = fifoHandle->headPage->nextPage;
-        st_mem_free(fifoHandle->headPage);
+        os_mem_free(fifoHandle->headPage);
         fifoHandle->headPage = fifoPageSav;
     }
     
-    st_mem_free(fifoHandle);
+    os_mem_free(fifoHandle);
 }
 
-st_uint8_t *fifo_put(void *fifo, st_uint8_t byte)
+os_uint8_t *fifo_put(void *fifo, os_uint8_t byte)
 {
-    st_uint8_t *pos;
+    os_uint8_t *pos;
     FIFOHandle_t *fifoHandle = NULL;
     FIFOPage_t *fifoPage = NULL;
     fifoHandle = (FIFOHandle_t *)fifo;
 
     if(fifoHandle->tailPage == NULL)
     {
-        ST_ASSERT(fifoHandle->headPage == NULL);
-        fifoPage = st_mem_alloc(sizeof(FIFOPage_t));
+        OS_ASSERT(fifoHandle->headPage == NULL);
+        fifoPage = os_mem_alloc(sizeof(FIFOPage_t));
         if(fifoPage == NULL)
         {
             return NULL;
@@ -86,8 +86,8 @@ st_uint8_t *fifo_put(void *fifo, st_uint8_t byte)
 
     if(fifoHandle->tailPage->tail >= FIFO_PAGE_SIZE)
     {
-        ST_ASSERT(fifoHandle->tailPage->nextPage == NULL);
-        fifoPage = st_mem_alloc(sizeof(FIFOPage_t));
+        OS_ASSERT(fifoHandle->tailPage->nextPage == NULL);
+        fifoPage = os_mem_alloc(sizeof(FIFOPage_t));
         if(fifoPage == NULL)
         {
             return NULL;
@@ -109,14 +109,14 @@ st_uint8_t *fifo_put(void *fifo, st_uint8_t byte)
     
 }
 
-st_uint32_t fifo_len(void *fifo)
+os_uint32_t fifo_len(void *fifo)
 {
     return ((FIFOHandle_t *)fifo)->datalen;
 }
 
-st_uint8_t fifo_get(void *fifo)
+os_uint8_t fifo_get(void *fifo)
 {
-    st_uint8_t u8tmp = 0;
+    os_uint8_t u8tmp = 0;
     FIFOHandle_t *fifoHandle = NULL;
     FIFOPage_t *fifoPage = NULL;
     fifoHandle = (FIFOHandle_t *)fifo;
@@ -128,7 +128,7 @@ st_uint8_t fifo_get(void *fifo)
         if(fifoHandle->headPage->head == fifoHandle->headPage->tail)
         {
             fifoPage = fifoHandle->headPage->nextPage;
-            st_mem_free(fifoHandle->headPage);
+            os_mem_free(fifoHandle->headPage);
             fifoHandle->headPage = fifoPage;
             if(fifoHandle->headPage == NULL)
             {

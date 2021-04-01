@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /* Includes -------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 
 /* Exported define ------------------------------------------------------------*/
 /* LEDS - The LED number is the same as the bit position */
@@ -48,14 +48,14 @@ extern "C" {
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-void led_init( st_uint8_t task_id );
-void led_task( st_int8_t event_id );
+void led_init( os_uint8_t task_id );
+void led_task( os_int8_t event_id );
 
-st_uint8_t led_set( st_uint8_t led, st_uint8_t mode );
-void led_blink( st_uint8_t leds, st_uint8_t cnt, st_uint8_t duty, st_uint16_t time );
+os_uint8_t led_set( os_uint8_t led, os_uint8_t mode );
+void led_blink( os_uint8_t leds, os_uint8_t cnt, os_uint8_t duty, os_uint16_t time );
 void led_enter_sleep( void );
 void led_exit_sleep( void );
-st_uint8_t led_get_state ( void );
+os_uint8_t led_get_state ( void );
 
 #ifdef __cplusplus
 }

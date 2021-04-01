@@ -22,7 +22,7 @@ extern "C" {
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-void exported_function(char *file, st_uint32_t line);
+void exported_function(char *file, os_uint32_t line);
 
 #ifdef __cplusplus
 }

@@ -10,7 +10,7 @@
  ******************************************************************************/
  
  /* Includes ------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 #include "hal_drivers.h"
 #include "components/cli/cli.h"
 
@@ -30,12 +30,12 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct cli_key {
-    st_uint8_t len;
+    os_uint8_t len;
     char val[CLI_MAX_KEY_LEN];
 } cli_key_t;
 
 typedef struct cli_cmd {
-    st_uint8_t len;
+    os_uint8_t len;
     char str[CLI_MAX_CMD_LENGTH];
 } cli_cmd_t;
 
@@ -51,15 +51,15 @@ static cli_cmd_t *p_cli_cmd;
 static void *p_cli_tx_fifo;
 #endif
 
-static st_uint8_t cli_task_id;
+static os_uint8_t cli_task_id;
 
 /* Private function prototypes -----------------------------------------------*/
-static void cli_uart_driver_callback( st_uint8_t event );
+static void cli_uart_driver_callback( os_uint8_t event );
 static void cli_rx_key( const cli_key_t *p_key );
 static void cli_process_cmd( char *p_cmd );
 
 /* Exported function implementations -----------------------------------------*/
-void cli_init( st_uint8_t task_id )
+void cli_init( os_uint8_t task_id )
 {
     hal_uart_config_t cfg;
     
@@ -83,17 +83,17 @@ void cli_init( st_uint8_t task_id )
     hal_uart_open( CLI_UART_PORT, &cfg );
 }
 
-void cli_task( st_int8_t event_id )
+void cli_task( os_int8_t event_id )
 {
     cli_key_t *p_key;
 
-    ST_ASSERT( event_id ==  ST_TASK_EVT_MSG );
+    OS_ASSERT( event_id ==  OS_TASK_EVT_MSG );
 
-    p_key = (cli_key_t *)st_msg_recv( st_get_task_id_self() );
+    p_key = (cli_key_t *)os_msg_recv( os_get_task_id_self() );
 
-    ST_ASSERT( p_key != NULL );
+    OS_ASSERT( p_key != NULL );
     cli_rx_key( p_key );
-    st_msg_delete( p_key );
+    os_msg_delete( p_key );
 }
 
 /*
@@ -117,19 +117,19 @@ void cli_disable( void )
 
     if( p_cli_cmd )
     {
-        st_mem_free( p_cli_cmd );
+        os_mem_free( p_cli_cmd );
         p_cli_cmd = NULL;
     }
 
     if( p_cli_key )
     {
-        st_msg_delete( p_cli_key );
+        os_msg_delete( p_cli_key );
         p_cli_key = NULL;
     }
 
-    while( (p_msg = st_msg_recv(cli_task_id)) != NULL )
+    while( (p_msg = os_msg_recv(cli_task_id)) != NULL )
     {
-        st_msg_delete( p_msg );
+        os_msg_delete( p_msg );
     }
 }
 */
@@ -142,35 +142,35 @@ void cli_register_cmds( const cli_cmd_mapping_t *cmd )
 void cli_print_char( char ch )
 {
 #if CLI_TX_BUF_SIZE > 0
-    st_uint8_t *pc;
+    os_uint8_t *pc;
 
     if(p_cli_tx_fifo == NULL)
     {
         if( hal_uart_tx_buf_free(CLI_UART_PORT) )
         {
-            hal_uart_putc( CLI_UART_PORT, (st_uint8_t)ch );
+            hal_uart_putc( CLI_UART_PORT, (os_uint8_t)ch );
         }
         else
         {
             p_cli_tx_fifo = fifo_create();
-            ST_ASSERT( p_cli_tx_fifo != NULL );
-            pc = fifo_put( p_cli_tx_fifo, (st_uint8_t)ch );
-            ST_ASSERT( pc != NULL );
+            OS_ASSERT( p_cli_tx_fifo != NULL );
+            pc = fifo_put( p_cli_tx_fifo, (os_uint8_t)ch );
+            OS_ASSERT( pc != NULL );
         }
     }
     else
     {
         if( fifo_len(p_cli_tx_fifo) < CLI_TX_BUF_SIZE )
         {
-            pc = fifo_put( p_cli_tx_fifo, (st_uint8_t)ch );
+            pc = fifo_put( p_cli_tx_fifo, (os_uint8_t)ch );
         }
         else
         {
             while( hal_uart_tx_buf_free(CLI_UART_PORT) == 0 );
             hal_uart_putc( CLI_UART_PORT, fifo_get(p_cli_tx_fifo) );
-            pc = fifo_put( p_cli_tx_fifo, (st_uint8_t)ch );
+            pc = fifo_put( p_cli_tx_fifo, (os_uint8_t)ch );
         }
-        ST_ASSERT( pc != NULL );
+        OS_ASSERT( pc != NULL );
     }
 #else
     while( hal_uart_tx_buf_free(CLI_UART_PORT) == 0 );
@@ -187,11 +187,11 @@ void cli_print_str(const char *s)
 }
 
 
-void cli_print_sint(st_int32_t num)
+void cli_print_sint(os_int32_t num)
 {
     char str[SINT_STR_LEN_MAX];
-    st_uint8_t len;
-    st_uint8_t i;
+    os_uint8_t len;
+    os_uint8_t i;
     
     len = tostr_sint(num, str);
     
@@ -202,11 +202,11 @@ void cli_print_sint(st_int32_t num)
     
 }
 
-void cli_print_uint(st_uint32_t num)
+void cli_print_uint(os_uint32_t num)
 {
     char str[UINT_STR_LEN_MAX];
-    st_uint8_t len;
-    st_uint8_t i;
+    os_uint8_t len;
+    os_uint8_t i;
     
     len = tostr_uint(num, str);
     
@@ -216,11 +216,11 @@ void cli_print_uint(st_uint32_t num)
     }
 }
 
-void cli_print_hex8(st_uint8_t num)
+void cli_print_hex8(os_uint8_t num)
 {
     char str[HEX8_STR_LEN_MAX];
-    st_uint8_t len;
-    st_uint8_t i;
+    os_uint8_t len;
+    os_uint8_t i;
     
     len = tostr_hex8(num, str);
     
@@ -231,11 +231,11 @@ void cli_print_hex8(st_uint8_t num)
 }
 
 
-void cli_print_hex16(st_uint16_t num)
+void cli_print_hex16(os_uint16_t num)
 {
     char str[HEX16_STR_LEN_MAX];
-    st_uint8_t len;
-    st_uint8_t i;
+    os_uint8_t len;
+    os_uint8_t i;
     
     len = tostr_hex16(num, str);
     
@@ -245,11 +245,11 @@ void cli_print_hex16(st_uint16_t num)
     }
 }
 
-void cli_print_hex32(st_uint32_t num)
+void cli_print_hex32(os_uint32_t num)
 {
     char str[HEX32_STR_LEN_MAX];
-    st_uint8_t len;
-    st_uint8_t i;
+    os_uint8_t len;
+    os_uint8_t i;
     
     len = tostr_hex32(num, str);
     
@@ -260,11 +260,11 @@ void cli_print_hex32(st_uint32_t num)
 }
 
 /* Private function implementations ------------------------------------------*/
-static void cli_uart_driver_callback( st_uint8_t event )
+static void cli_uart_driver_callback( os_uint8_t event )
 {
-    st_uint8_t size;
-    st_uint8_t i;
-    st_uint8_t byte;
+    os_uint8_t size;
+    os_uint8_t i;
+    os_uint8_t byte;
     
     switch ( event )
     {
@@ -274,7 +274,7 @@ static void cli_uart_driver_callback( st_uint8_t event )
             {
                 if( p_cli_key == NULL )
                 {
-                    p_cli_key = (cli_key_t *)st_msg_create( sizeof(cli_key_t), 0 );
+                    p_cli_key = (cli_key_t *)os_msg_create( sizeof(cli_key_t), 0 );
                     if( p_cli_key != NULL )
                     {
                         p_cli_key->len = 0;
@@ -289,7 +289,7 @@ static void cli_uart_driver_callback( st_uint8_t event )
                         p_cli_key->val[p_cli_key->len++] = byte;
                         if(p_cli_key->len == CLI_MAX_KEY_LEN)
                         {
-                            st_msg_send( p_cli_key, cli_task_id );
+                            os_msg_send( p_cli_key, cli_task_id );
                             p_cli_key = NULL;
                         }
                     }
@@ -331,7 +331,7 @@ static void cli_uart_driver_callback( st_uint8_t event )
         case HAL_UART_EVENT_IDLE:
             if( p_cli_key )
             {
-                st_msg_send( p_cli_key, cli_task_id );
+                os_msg_send( p_cli_key, cli_task_id );
                 p_cli_key = NULL;
             }
         break;
@@ -342,7 +342,7 @@ static void cli_rx_key( const cli_key_t *p_key )
 {
     char c;
 #if 0
-    st_uint8_t i;
+    os_uint8_t i;
     
 
     for( i = 0; i < p_key->len; i++ )
@@ -364,7 +364,7 @@ static void cli_rx_key( const cli_key_t *p_key )
             {
                 if( p_cli_cmd == NULL )
                 {
-                    p_cli_cmd = (cli_cmd_t *)st_mem_alloc( sizeof(cli_cmd_t) );
+                    p_cli_cmd = (cli_cmd_t *)os_mem_alloc( sizeof(cli_cmd_t) );
                     if( p_cli_cmd )
                     {
                         p_cli_cmd->len = 0;
@@ -391,7 +391,7 @@ static void cli_rx_key( const cli_key_t *p_key )
                         
                         if( p_cli_cmd->len == 0 )
                         {
-                            st_mem_free( p_cli_cmd );
+                            os_mem_free( p_cli_cmd );
                             p_cli_cmd = NULL;
                         }
                     }
@@ -409,7 +409,7 @@ static void cli_rx_key( const cli_key_t *p_key )
                     p_cli_cmd->str[p_cli_cmd->len] = '\0';
 
                     cli_process_cmd( p_cli_cmd->str );
-                    st_mem_free( p_cli_cmd );
+                    os_mem_free( p_cli_cmd );
                     p_cli_cmd = NULL;
                 }
             }

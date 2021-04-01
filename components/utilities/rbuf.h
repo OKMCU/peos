@@ -17,15 +17,15 @@ extern "C" {
 #endif
 
 /* Includes -------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 
 /* Exported define ------------------------------------------------------------*/
 /* Exported typedef -----------------------------------------------------------*/
 typedef struct ring_buf {
-    st_uint8_t *buf;
-    st_size_t size;
-	st_size_t head;
-	st_size_t tail;
+    os_uint8_t *buf;
+    os_size_t size;
+	os_size_t head;
+	os_size_t tail;
 } ring_buf_t;
 
 /* Exported macro -------------------------------------------------------------*/
@@ -41,12 +41,12 @@ typedef struct ring_buf {
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
 void ring_buf_flush( ring_buf_t *rb );
-void ring_buf_put  ( ring_buf_t *rb, st_uint8_t byte );
-st_uint8_t ring_buf_get  ( ring_buf_t *rb );
-st_uint8_t ring_buf_full ( const ring_buf_t *rb );
-st_uint8_t ring_buf_empty( const ring_buf_t *rb );
-st_size_t ring_buf_used_size( const ring_buf_t *rb );
-st_size_t ring_buf_free_size( const ring_buf_t *rb );
+void ring_buf_put  ( ring_buf_t *rb, os_uint8_t byte );
+os_uint8_t ring_buf_get  ( ring_buf_t *rb );
+os_uint8_t ring_buf_full ( const ring_buf_t *rb );
+os_uint8_t ring_buf_empty( const ring_buf_t *rb );
+os_size_t ring_buf_used_size( const ring_buf_t *rb );
+os_size_t ring_buf_free_size( const ring_buf_t *rb );
 
 #ifdef __cplusplus
 }

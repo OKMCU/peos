@@ -37,7 +37,7 @@
 #include "stm32l0xx_ll_lpuart.h"
 #include "stm32l0xx_ll_rng.h"
 
-#include "st.h"
+#include "os.h"
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -50,7 +50,7 @@ static void SystemClock_Config( void );
 /* Exported function implementations -----------------------------------------*/
 
 
-#ifdef ST_ASSERT_EN
+#ifdef OS_ASSERT_EN
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
@@ -58,7 +58,7 @@ static void SystemClock_Config( void );
   * @param  line: assert_param error line source number
   * @retval None
   */
-void st_assert_failed(char *file, st_uint32_t line)
+void os_assert_failed(char *file, os_uint32_t line)
 {
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d", file, line) */
@@ -68,9 +68,9 @@ void st_assert_failed(char *file, st_uint32_t line)
   {
   }
 }
-#endif // (ST_ASSERT_EN > 0)
+#endif // (OS_ASSERT_EN > 0)
 
-#ifdef ST_CLOCK_EN
+#ifdef OS_CLOCK_EN
 /**
   * @brief  This function handles SysTick Handler.
   * @param  None
@@ -79,16 +79,16 @@ void st_assert_failed(char *file, st_uint32_t line)
 void SysTick_Handler(void);
 void SysTick_Handler(void)
 {
-    extern st_uint8_t st_systick;
-    st_systick++;
+    extern os_uint8_t os_systick;
+    os_systick++;
 }
-#endif // (ST_TIMER_EN > 0)
+#endif // (OS_TIMER_EN > 0)
 
-void st_board_init( void )
+void os_board_init( void )
 {
     SystemClock_Config();
     
- #ifdef ST_CLOCK_EN
+ #ifdef OS_CLOCK_EN
     SysTick_Config( 32000 );
  #endif
  
@@ -110,7 +110,7 @@ void st_board_init( void )
     //NVIC_EnableIRQ( EXTI2_3_IRQn );
 }
 
-void st_board_idle( void )
+void os_board_idle( void )
 {
 
 }
@@ -167,12 +167,12 @@ static void SystemClock_Config( void )
 }
 
 /* integrity check of type sizes */
-ST_ASSERT_SIZE(  st_int8_t, 1);
-ST_ASSERT_SIZE(st_uint8_t, 1);
-ST_ASSERT_SIZE(st_int16_t, 2);
-ST_ASSERT_SIZE(st_uint16_t, 2);
-ST_ASSERT_SIZE(st_int32_t, 4);
-ST_ASSERT_SIZE(st_uint32_t, 4);
+OS_ASSERT_SIZE(  os_int8_t, 1);
+OS_ASSERT_SIZE(os_uint8_t, 1);
+OS_ASSERT_SIZE(os_int16_t, 2);
+OS_ASSERT_SIZE(os_uint16_t, 2);
+OS_ASSERT_SIZE(os_int32_t, 4);
+OS_ASSERT_SIZE(os_uint32_t, 4);
 
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
 

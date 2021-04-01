@@ -1031,22 +1031,22 @@
       </file>
     </group>
     <file>
-      <name>$PROJ_DIR$\..\..\..\src\st_clock.c</name>
+      <name>$PROJ_DIR$\..\..\..\src\os_clock.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\st_config.c</name>
+      <name>$PROJ_DIR$\..\os_config.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\src\st_msg.c</name>
+      <name>$PROJ_DIR$\..\..\..\src\os_msg.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\src\st_sys.c</name>
+      <name>$PROJ_DIR$\..\..\..\src\os_sys.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\src\st_task.c</name>
+      <name>$PROJ_DIR$\..\..\..\src\os_task.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\src\st_timer.c</name>
+      <name>$PROJ_DIR$\..\..\..\src\os_timer.c</name>
     </file>
   </group>
 </project>

@@ -11,49 +11,38 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "os.h"
-#include "hal_drivers.h"
-#include "components/led/led.h"
-#include "components/cli/cli.h"
-#include "demo.h"
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static uint8_t demo_task_id;
+extern const OS_TASK_t *os_task_list;
+extern OS_TCB_t *os_task_tcb;
+extern const os_uint8_t os_task_max;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Exported function implementations -----------------------------------------*/
-void demo_init( uint8_t task_id )
+void os_task_set_event   ( os_uint8_t task_id, os_int8_t event_id )
 {
-    demo_task_id = task_id;
-    os_task_set_event( task_id, DEMO_TASK_EVT_PWR_ON_INIT );
+    os_event_t event;
+    OS_ASSERT( task_id < os_task_max && event_id >= 0 );
+    
+    event = BV(event_id);
+    OS_ENTER_CRITICAL();
+    os_task_tcb[task_id].event |= event;
+    OS_EXIT_CRITICAL();
 }
 
-void demo_task( int8_t event_id )
+void os_task_clr_event   ( os_uint8_t task_id, os_int8_t event_id )
 {
-    switch( event_id )
-    {
-        case DEMO_TASK_EVT_PWR_ON_INIT:
-
-            os_task_set_event( demo_task_id, DEMO_TASK_EVT_LED_BLINK_FAST );
-            //os_timer_event_create( TASK_ID_DEMO, DEMO_TASK_EVT_LED_BLINK_FAST, 10000 );
-            os_timer_create( demo_task_id, DEMO_TASK_EVT_LED_BLINK_SLOW, 10000 );
-        break;
-        
-        case DEMO_TASK_EVT_LED_BLINK_FAST:
-            led_blink( LED_ALL, 0, 50, 300 );
-        break;
-
-        case DEMO_TASK_EVT_LED_BLINK_SLOW:
-            led_blink( LED_ALL, 0, 50, 1000 );
-        break;
-
-        default:
-            OS_ASSERT_FORCED();
-        break;
-    }
+    os_event_t event;
+    OS_ASSERT( task_id < os_task_max && event_id >= 0 );
+    
+    event = ~(BV(event_id));
+    OS_ENTER_CRITICAL();
+    os_task_tcb[task_id].event &= event;
+    OS_EXIT_CRITICAL();
 }
 
 /* Private function implementations ------------------------------------------*/

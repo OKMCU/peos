@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /* Includes -------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 
 /* Exported define ------------------------------------------------------------*/
 #define SINT_STR_LEN_MAX    11
@@ -30,14 +30,14 @@ extern "C" {
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-st_uint8_t hexstr2uint(const char *str, st_uint32_t *num);
-st_uint8_t decstr2uint(const char *str, st_uint32_t *num);
-st_uint8_t decstr2sint(const char *str, st_int32_t *num);
-st_uint8_t tostr_sint(st_int32_t num, char *str);
-st_uint8_t tostr_uint(st_uint32_t num, char *str);
-st_uint8_t tostr_hex8(st_uint8_t num, char *str);
-st_uint8_t tostr_hex16(st_uint16_t num, char *str);
-st_uint8_t tostr_hex32(st_uint32_t num, char *str);
+os_uint8_t hexstr2uint(const char *str, os_uint32_t *num);
+os_uint8_t decstr2uint(const char *str, os_uint32_t *num);
+os_uint8_t decstr2sint(const char *str, os_int32_t *num);
+os_uint8_t tostr_sint(os_int32_t num, char *str);
+os_uint8_t tostr_uint(os_uint32_t num, char *str);
+os_uint8_t tostr_hex8(os_uint8_t num, char *str);
+os_uint8_t tostr_hex16(os_uint16_t num, char *str);
+os_uint8_t tostr_hex32(os_uint32_t num, char *str);
 char *str_starts_with(char *str1, const char *str2);
 char *str_ends_with(char *str1, const char *str2);
 

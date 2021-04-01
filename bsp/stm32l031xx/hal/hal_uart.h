@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /* Includes -------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 
 /* Exported define ------------------------------------------------------------*/
 #define HAL_UART_PORT_0                          0
@@ -66,30 +66,30 @@ extern "C" {
 
 /* Exported typedef -----------------------------------------------------------*/
 typedef struct {
-    st_uint32_t baud_rate;
-    st_uint16_t data_bits   :4;
-    st_uint16_t stop_bits   :2;
-    st_uint16_t parity      :2;
-    st_uint16_t bit_order   :1;
-    st_uint16_t invert      :1;
-    st_uint16_t reserved    :6;
-    void (*callback)( st_uint8_t event );
+    os_uint32_t baud_rate;
+    os_uint16_t data_bits   :4;
+    os_uint16_t stop_bits   :2;
+    os_uint16_t parity      :2;
+    os_uint16_t bit_order   :1;
+    os_uint16_t invert      :1;
+    os_uint16_t reserved    :6;
+    void (*callback)( os_uint8_t event );
 } hal_uart_config_t;
 
 /* Exported macro -------------------------------------------------------------*/
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-void hal_uart_rxd_init( st_uint8_t task_id );
-void hal_uart_rxd_task( st_int8_t event_id );
-void hal_uart_txd_init( st_uint8_t task_id );
-void hal_uart_txd_task( st_int8_t event_id );
+void hal_uart_rxd_init( os_uint8_t task_id );
+void hal_uart_rxd_task( os_int8_t event_id );
+void hal_uart_txd_init( os_uint8_t task_id );
+void hal_uart_txd_task( os_int8_t event_id );
 
-void hal_uart_open( st_uint8_t port, const hal_uart_config_t *cfg );
-void hal_uart_putc( st_uint8_t port, st_uint8_t byte );
-st_uint8_t hal_uart_getc( st_uint8_t port );
-st_uint8_t hal_uart_tx_buf_free( st_uint8_t port );
-st_uint8_t hal_uart_rx_buf_used( st_uint8_t port );
-void hal_uart_close( st_uint8_t port );
+void hal_uart_open( os_uint8_t port, const hal_uart_config_t *cfg );
+void hal_uart_putc( os_uint8_t port, os_uint8_t byte );
+os_uint8_t hal_uart_getc( os_uint8_t port );
+os_uint8_t hal_uart_tx_buf_free( os_uint8_t port );
+os_uint8_t hal_uart_rx_buf_used( os_uint8_t port );
+void hal_uart_close( os_uint8_t port );
 
 #ifdef __cplusplus
 }

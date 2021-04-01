@@ -1,5 +1,5 @@
-#ifndef __ST_CONFIG_H__
-#define __ST_CONFIG_H__
+#ifndef __OS_CONFIG_H__
+#define __OS_CONFIG_H__
 /*******************************************************************************
  * Copyright (c) 2019-2020, Single-Thread Development Team
  *
@@ -14,20 +14,20 @@
 /*******************************************************************************
  * Single-Thread Kernel
  ******************************************************************************/
-#define ST_ASSERT_EN
-#define ST_MSG_EN
-#define ST_CLOCK_EN
-#define ST_TIMER_EN
-#define ST_TIMER_USE_HEAP
-#define ST_TIMER_MAX          8             // meaningless if defined ST_TIMER_USE_HEAP 
-#define ST_MEM_EN
+#define OS_ASSERT_EN
+#define OS_MSG_EN
+#define OS_CLOCK_EN
+#define OS_TIMER_EN
+#define OS_TIMER_USE_HEAP
+#define OS_TIMER_MAX          8             // meaningless if defined OS_TIMER_USE_HEAP 
+#define OS_MEM_EN
 
-#define ST_TASK_EVENT_MAX     32            // should be 8, 16 or 32
+#define OS_TASK_EVENT_MAX     32            // should be 8, 16 or 32
 /*******************************************************************************
  * Single-Thread HAL Drivers
  ******************************************************************************/
-#define ST_USING_HAL_PIN
-#define ST_USING_HAL_UART
+#define OS_USING_HAL_PIN
+#define OS_USING_HAL_UART
 
 /*******************************************************************************
  * Single-Thread Components - Task IDs
@@ -40,8 +40,8 @@
 /*******************************************************************************
  * Single-Thread Components - LED
  ******************************************************************************/
-#define ST_USING_LED
-#ifdef  ST_USING_LED
+#define OS_USING_LED
+#ifdef  OS_USING_LED
 #define LED_0_PIN               HAL_PIN_GET( HAL_GPIO_PORT_B, 3 )
 //#define LED_1_PIN
 //#define LED_2_PIN
@@ -57,16 +57,16 @@
 /*******************************************************************************
  * Single-Thread Components - FIFO buffer
  ******************************************************************************/
-#define ST_USING_FIFO
-#ifdef  ST_USING_FIFO
+#define OS_USING_FIFO
+#ifdef  OS_USING_FIFO
 #define FIFO_PAGE_SIZE          64
 #endif
 
 /*******************************************************************************
  * Single-Thread Components - CLI
  ******************************************************************************/
-#define ST_USING_CLI
-#ifdef  ST_USING_CLI
+#define OS_USING_CLI
+#ifdef  OS_USING_CLI
 #define CLI_UART_PORT           HAL_UART_PORT_0
 #define CLI_UART_BAUDRATE       HAL_UART_BAUD_RATE_115200
 #define CLI_MAX_CMD_LENGTH      128

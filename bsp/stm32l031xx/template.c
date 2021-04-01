@@ -10,7 +10,7 @@
  ******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -29,7 +29,7 @@ static void private_function( void );
   * @note   None
   * @retval None
   */
-void exported_function(char *file, st_uint32_t line)
+void exported_function(char *file, os_uint32_t line)
 {
     /* Infinite loop */
     while (1)

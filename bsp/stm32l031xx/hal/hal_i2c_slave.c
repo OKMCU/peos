@@ -16,7 +16,7 @@
 #include "hal_i2c_slave.h"
 #include "components/utilities/rbuf.h"
 
-#ifdef ST_USING_HAL_I2C_SLAVE
+#ifdef OS_USING_HAL_I2C_SLAVE
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define I2CS0_RX_CACHE_SIZE         8
@@ -33,27 +33,27 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct {
-    st_uint8_t *rx_cache;
-    st_uint8_t *tx_cache;
-    st_uint8_t rx_cache_size;
-    st_uint8_t tx_cache_size;
+    os_uint8_t *rx_cache;
+    os_uint8_t *tx_cache;
+    os_uint8_t rx_cache_size;
+    os_uint8_t tx_cache_size;
 } i2cs_cache_t;
 
 typedef struct {
-    void (*callback)( st_uint8_t event );
-    st_uint8_t rx_head;
-    st_uint8_t rx_tail;
-    st_uint8_t tx_head;
-    st_uint8_t tx_tail;
+    void (*callback)( os_uint8_t event );
+    os_uint8_t rx_head;
+    os_uint8_t rx_tail;
+    os_uint8_t tx_head;
+    os_uint8_t tx_tail;
 } i2cs_ctrl_t;
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static st_uint8_t i2cs0_rx_cache[I2CS0_RX_CACHE_SIZE];
-static st_uint8_t i2cs0_tx_cache[I2CS0_TX_CACHE_SIZE];
-static st_uint8_t i2cs1_rx_cache[I2CS1_RX_CACHE_SIZE];
-static st_uint8_t i2cs1_tx_cache[I2CS1_TX_CACHE_SIZE];
-static st_uint8_t task_id_i2cs[HAL_I2CS_ADDR_MAX];
+static os_uint8_t i2cs0_rx_cache[I2CS0_RX_CACHE_SIZE];
+static os_uint8_t i2cs0_tx_cache[I2CS0_TX_CACHE_SIZE];
+static os_uint8_t i2cs1_rx_cache[I2CS1_RX_CACHE_SIZE];
+static os_uint8_t i2cs1_tx_cache[I2CS1_TX_CACHE_SIZE];
+static os_uint8_t task_id_i2cs[HAL_I2CS_ADDR_MAX];
 
 static i2cs_cache_t const i2cs_cache[HAL_I2CS_PORT_MAX] = {
     { 
@@ -78,9 +78,9 @@ static I2C_TypeDef* const I2Cx[HAL_I2CS_PORT_MAX] = {
 static i2cs_ctrl_t i2cs_ctrl[HAL_UART_PORT_MAX] = { 0 };
 
 /* Private function prototypes -----------------------------------------------*/
-static void hal_i2cs_portx_init( st_uint8_t port, st_uint8_t task_id );
-static void hal_i2cs_portx_task( st_uint8_t port, st_int8_t event_id );
-static void hal_i2cs_isr( st_uint8_t port );
+static void hal_i2cs_portx_init( os_uint8_t port, os_uint8_t task_id );
+static void hal_i2cs_portx_task( os_uint8_t port, os_int8_t event_id );
+static void hal_i2cs_isr( os_uint8_t port );
 
 extern void I2C0_EV_IRQHandler( void );
 extern void I2C1_EV_IRQHandler( void );
@@ -88,22 +88,22 @@ extern void I2C0_ER_IRQHandler( void );
 extern void I2C1_ER_IRQHandler( void );
 
 /* Exported function implementations -----------------------------------------*/
-void hal_i2cs_port0_init( st_uint8_t task_id )
+void hal_i2cs_port0_init( os_uint8_t task_id )
 {
     hal_i2cs_portx_init( HAL_I2CS_PORT_0 );
 }
 
-void hal_i2cs_port1_init( st_uint8_t task_id )
+void hal_i2cs_port1_init( os_uint8_t task_id )
 {
     hal_i2cs_portx_init( HAL_I2CS_PORT_1, task_id );
 }
 
-void hal_i2cs_port0_task( st_int8_t event_id )
+void hal_i2cs_port0_task( os_int8_t event_id )
 {
     hal_i2cs_portx_task( HAL_I2CS_PORT_0, event_id );
 }
 
-void hal_i2cs_port1_task( st_int8_t event_id )
+void hal_i2cs_port1_task( os_int8_t event_id )
 {
     hal_i2cs_portx_task( HAL_I2CS_PORT_1, event_id );
 }
@@ -115,11 +115,11 @@ void hal_i2cs_port1_task( st_int8_t event_id )
   * @note   None
   * @retval None
   */
-void hal_i2cs_config( st_uint8_t port, const hal_i2cs_config_t *cfg )
+void hal_i2cs_config( os_uint8_t port, const hal_i2cs_config_t *cfg )
 {
-    ST_ASSERT( port < HAL_I2CS_PORT_MAX );
-    ST_ASSERT( cfg != NULL );
-    ST_ASSERT( !LL_I2C_IsEnabled(I2Cx[port]) );
+    OS_ASSERT( port < HAL_I2CS_PORT_MAX );
+    OS_ASSERT( cfg != NULL );
+    OS_ASSERT( !LL_I2C_IsEnabled(I2Cx[port]) );
     
     // reset peripherals firstly
     switch ( port )
@@ -178,14 +178,14 @@ void hal_i2cs_config( st_uint8_t port, const hal_i2cs_config_t *cfg )
     I2Cx[port]->TIMEOUTR = 0;
     
     // init uart control body info
-    st_memset( &i2cs_ctrl[port], 0, sizeof(i2cs_ctrl_t) );
+    os_memset( &i2cs_ctrl[port], 0, sizeof(i2cs_ctrl_t) );
     i2cs_ctrl[port].callback = cfg->callback;
 }
 
-void hal_i2cs_open( st_uint8_t port )
+void hal_i2cs_open( os_uint8_t port )
 {
-    ST_ASSERT( port < HAL_I2CS_PORT_MAX );
-    ST_ASSERT( !LL_I2C_IsEnabled(I2Cx[port]) );
+    OS_ASSERT( port < HAL_I2CS_PORT_MAX );
+    OS_ASSERT( !LL_I2C_IsEnabled(I2Cx[port]) );
     LL_I2C_Enable( I2Cx[port] );
 }
 
@@ -196,10 +196,10 @@ void hal_i2cs_open( st_uint8_t port )
   * @note   None
   * @retval None
   */
-void hal_uart_putc( st_uint8_t port, st_uint8_t byte )
+void hal_uart_putc( os_uint8_t port, os_uint8_t byte )
 {
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
-    ST_ASSERT( LL_USART_IsEnabled(USARTx[port]) );
+    OS_ASSERT( port < HAL_UART_PORT_MAX );
+    OS_ASSERT( LL_USART_IsEnabled(USARTx[port]) );
     
     while( RING_BUF_FULL(uart_ctrl[port].tx_head, 
                          uart_ctrl[port].tx_tail, 
@@ -229,12 +229,12 @@ void hal_uart_putc( st_uint8_t port, st_uint8_t byte )
   * @note   None
   * @retval None
   */
-st_uint8_t hal_uart_getc( st_uint8_t port )
+os_uint8_t hal_uart_getc( os_uint8_t port )
 {
-    st_uint8_t byte;
+    os_uint8_t byte;
     
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
-    ST_ASSERT( LL_USART_IsEnabled(USARTx[port]) );
+    OS_ASSERT( port < HAL_UART_PORT_MAX );
+    OS_ASSERT( LL_USART_IsEnabled(USARTx[port]) );
 
     while( RING_BUF_EMPTY(uart_ctrl[port].rx_head, 
                           uart_ctrl[port].rx_tail) );
@@ -249,17 +249,17 @@ st_uint8_t hal_uart_getc( st_uint8_t port )
     return byte;
 }
 
-st_uint8_t hal_uart_tx_buf_free( st_uint8_t port )
+os_uint8_t hal_uart_tx_buf_free( os_uint8_t port )
 {
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    OS_ASSERT( port < HAL_UART_PORT_MAX );
     return RING_BUF_FREE_SIZE( uart_ctrl[port].tx_head, 
                                uart_ctrl[port].tx_tail, 
                                uart_cache[port].tx_cache_size );
 }
 
-st_uint8_t hal_uart_rx_buf_used( st_uint8_t port )
+os_uint8_t hal_uart_rx_buf_used( os_uint8_t port )
 {
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    OS_ASSERT( port < HAL_UART_PORT_MAX );
     return RING_BUF_USED_SIZE( uart_ctrl[port].rx_head, 
                                uart_ctrl[port].rx_tail, 
                                uart_cache[port].rx_cache_size );
@@ -272,10 +272,10 @@ st_uint8_t hal_uart_rx_buf_used( st_uint8_t port )
   * @note   None
   * @retval None
   */
-void hal_i2cs_close( st_uint8_t port )
+void hal_i2cs_close( os_uint8_t port )
 {
-    ST_ASSERT( port < HAL_I2CS_PORT_MAX );
-    ST_ASSERT( LL_I2C_IsEnabled(I2Cx[port]) );
+    OS_ASSERT( port < HAL_I2CS_PORT_MAX );
+    OS_ASSERT( LL_I2C_IsEnabled(I2Cx[port]) );
 
     LL_I2C_Disable( I2Cx[port] );
 
@@ -302,14 +302,14 @@ void hal_i2cs_close( st_uint8_t port )
 }
 
 /* Private function implementations ------------------------------------------*/
-static void hal_i2cs_portx_init( st_uint8_t port, st_uint8_t task_id )
+static void hal_i2cs_portx_init( os_uint8_t port, os_uint8_t task_id )
 {
     task_id_i2cs[port] = task_id;
 }
 
-static void hal_i2cs_portx_task( st_uint8_t port, st_int8_t event_id )
+static void hal_i2cs_portx_task( os_uint8_t port, os_int8_t event_id )
 {
-    st_uint8_t const event_mapping[] = {
+    os_uint8_t const event_mapping[] = {
         HAL_I2CS_EVENT_ADDRW,
         HAL_I2CS_EVENT_RXNE,
         HAL_I2CS_EVENT_ADDRR,
@@ -318,7 +318,7 @@ static void hal_i2cs_portx_task( st_uint8_t port, st_int8_t event_id )
         HAL_I2CS_EVENT_STOP,
     };
     
-    ST_ASSERT( event_id < sizeof(event_mapping)/sizeof(event_mapping[0]) );
+    OS_ASSERT( event_id < sizeof(event_mapping)/sizeof(event_mapping[0]) );
     if( i2cs_ctrl[port].callback )
         i2cs_ctrl[port].callback( event_mapping[event_id] );
 }
@@ -330,11 +330,11 @@ static void hal_i2cs_portx_task( st_uint8_t port, st_int8_t event_id )
   * @note   None
   * @retval None
   */
-static void hal_uart_isr( st_uint8_t port )
+static void hal_uart_isr( os_uint8_t port )
 {
-    st_uint8_t byte;
+    os_uint8_t byte;
 
-    ST_ASSERT( port < HAL_UART_PORT_MAX );
+    OS_ASSERT( port < HAL_UART_PORT_MAX );
     
     if( LL_USART_IsActiveFlag_RXNE(USARTx[port]) )
     {
@@ -343,7 +343,7 @@ static void hal_uart_isr( st_uint8_t port )
                           uart_ctrl[port].rx_tail, 
                           uart_cache[port].rx_cache_size) )
         {
-            st_task_set_event( task_id_rxd, uart_event[port].ovf );
+            os_task_set_event( task_id_rxd, uart_event[port].ovf );
         }
         else
         {
@@ -351,21 +351,21 @@ static void hal_uart_isr( st_uint8_t port )
                           uart_ctrl[port].rx_head, 
                           uart_cache[port].rx_cache, 
                           uart_cache[port].rx_cache_size );
-            st_task_set_event( task_id_rxd, uart_event[port].rxd );
+            os_task_set_event( task_id_rxd, uart_event[port].rxd );
         }
         return;
     }
 
     if( LL_USART_IsActiveFlag_PE(USARTx[port]) )
     {
-        st_task_set_event( task_id_rxd, uart_event[port].perr );
+        os_task_set_event( task_id_rxd, uart_event[port].perr );
         LL_USART_ClearFlag_PE( USARTx[port] );
         return;
     }
 
     if( LL_USART_IsActiveFlag_IDLE( USARTx[port]) )
     {
-        st_task_set_event( task_id_rxd, uart_event[port].idle );
+        os_task_set_event( task_id_rxd, uart_event[port].idle );
         LL_USART_ClearFlag_IDLE( USARTx[port] );
         return;
     }
@@ -383,7 +383,7 @@ static void hal_uart_isr( st_uint8_t port )
                           uart_cache[port].tx_cache, 
                           uart_cache[port].tx_cache_size );
             LL_USART_TransmitData8( USARTx[port], byte );
-            st_task_set_event( task_id_txd, uart_event[port].txd );
+            os_task_set_event( task_id_txd, uart_event[port].txd );
         }
         return;
     }
@@ -400,5 +400,5 @@ void USART2_IRQHandler( void )
 {
     hal_uart_isr( HAL_UART_PORT_1 );
 }
-#endif //ST_USING_HAL_UART
+#endif //OS_USING_HAL_UART
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/

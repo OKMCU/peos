@@ -13,7 +13,7 @@
 #include "stm32l0xx_ll_gpio.h"
 #include "hal_pin.h"
 
-#ifdef ST_USING_HAL_PIN
+#ifdef OS_USING_HAL_PIN
 /* Exported variables --------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -96,10 +96,10 @@ static __FLASH PIN_t const pin_list[] = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* Exported function implementations -----------------------------------------*/
-void hal_pin_mode( st_uint8_t pin, st_uint8_t mode )
+void hal_pin_mode( os_uint8_t pin, os_uint8_t mode )
 {
 
-    ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
+    OS_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
 
     switch( mode )
     {
@@ -142,34 +142,34 @@ void hal_pin_mode( st_uint8_t pin, st_uint8_t mode )
         break;
         
         default:
-            ST_ASSERT_FORCED();
+            OS_ASSERT_FORCED();
         break;
     }
 }
 
-void hal_pin_write( st_uint8_t pin, st_uint8_t value )
+void hal_pin_write( os_uint8_t pin, os_uint8_t value )
 {
-    ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
+    OS_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
     if( value )
         LL_GPIO_SetOutputPin( pin_list[pin].port, pin_list[pin].pin );
     else
         LL_GPIO_ResetOutputPin( pin_list[pin].port, pin_list[pin].pin );
 }
 
-void hal_pin_toggle( st_uint8_t pin )
+void hal_pin_toggle( os_uint8_t pin )
 {
-    ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
+    OS_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
     LL_GPIO_TogglePin( pin_list[pin].port, pin_list[pin].pin );
 }
 
-st_uint8_t hal_pin_read( st_uint8_t pin )
+os_uint8_t hal_pin_read( os_uint8_t pin )
 {
-    ST_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
-    return (st_uint8_t)LL_GPIO_IsInputPinSet( pin_list[pin].port, pin_list[pin].pin );
+    OS_ASSERT( pin < sizeof(pin_list)/sizeof(pin_list[0]) );
+    return (os_uint8_t)LL_GPIO_IsInputPinSet( pin_list[pin].port, pin_list[pin].pin );
 }
 
 /* Private function implementations ------------------------------------------*/
 
-#endif //ST_USING_HAL_PIN
+#endif //OS_USING_HAL_PIN
 /****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
 

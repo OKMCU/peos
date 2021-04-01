@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /* Includes -------------------------------------------------------------------*/
-#include "st.h"
+#include "os.h"
 
 /* Exported define ------------------------------------------------------------*/
 #define HAL_PIN_MODE_OUTPUT         0x00
@@ -38,14 +38,14 @@ extern "C" {
 
 /* Exported typedef -----------------------------------------------------------*/
 /* Exported macro -------------------------------------------------------------*/
-#define HAL_PIN_GET(port, pin)      (st_uint8_t)(port*16+pin)
+#define HAL_PIN_GET(port, pin)      (os_uint8_t)(port*16+pin)
 
 /* Exported variables ---------------------------------------------------------*/
 /* Exported function prototypes -----------------------------------------------*/
-void hal_pin_mode( st_uint8_t pin, st_uint8_t mode );
-void hal_pin_write( st_uint8_t pin, st_uint8_t value );
-void hal_pin_toggle( st_uint8_t pin );
-st_uint8_t hal_pin_read( st_uint8_t pin );
+void hal_pin_mode( os_uint8_t pin, os_uint8_t mode );
+void hal_pin_write( os_uint8_t pin, os_uint8_t value );
+void hal_pin_toggle( os_uint8_t pin );
+os_uint8_t hal_pin_read( os_uint8_t pin );
 
 #ifdef __cplusplus
 }
