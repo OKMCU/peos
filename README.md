@@ -1,1 +1,1 @@
-Single Thread Operation System for Embedded Devices
+Prioritized Event Operation System for Embedded Devices
