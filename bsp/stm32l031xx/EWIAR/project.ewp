@@ -613,7 +613,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>single-thread.hex</state>
+          <state>peos.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
