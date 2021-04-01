@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019-2020, Single-Thread Development Team
+ * Copyright (c) 2019-2020, PEOS Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  * 
@@ -55,5 +55,5 @@ typedef size_t      os_size_t;
 #endif
 
 #endif //__OS_PORTABLE_H__
-/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+/****** (C) COPYRIGHT 2019 PEOS Development Team. *****END OF FILE****/
 

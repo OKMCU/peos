@@ -1,18 +1,18 @@
 #ifndef __OS_CONFIG_H__
 #define __OS_CONFIG_H__
 /*******************************************************************************
- * Copyright (c) 2019-2020, Single-Thread Development Team
+ * Copyright (c) 2021-2020, PEOS Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date         Author       Notes
- * 2019-10-28   Wentao SUN   first version
+ * 2021-10-28   Wentao SUN   first version
  * 
  ******************************************************************************/
  
 /*******************************************************************************
- * Single-Thread Kernel
+ * PEOS Kernel
  ******************************************************************************/
 #define OS_ASSERT_EN
 #define OS_MSG_EN
@@ -24,13 +24,13 @@
 
 #define OS_TASK_EVENT_MAX     32            // should be 8, 16 or 32
 /*******************************************************************************
- * Single-Thread HAL Drivers
+ * PEOS HAL Drivers
  ******************************************************************************/
 #define OS_USING_HAL_PIN
 #define OS_USING_HAL_UART
 
 /*******************************************************************************
- * Single-Thread Components - Task IDs
+ * PEOS Components - Task IDs
  ******************************************************************************/
 //#define TASK_ID_DRIVERS         0
 //#define TASK_ID_LED             1
@@ -38,7 +38,7 @@
 //#define TASK_ID_CLI             3
 
 /*******************************************************************************
- * Single-Thread Components - LED
+ * PEOS Components - LED
  ******************************************************************************/
 #define OS_USING_LED
 #ifdef  OS_USING_LED
@@ -55,7 +55,7 @@
 #endif
 
 /*******************************************************************************
- * Single-Thread Components - FIFO buffer
+ * PEOS Components - FIFO buffer
  ******************************************************************************/
 #define OS_USING_FIFO
 #ifdef  OS_USING_FIFO
@@ -63,7 +63,7 @@
 #endif
 
 /*******************************************************************************
- * Single-Thread Components - CLI
+ * PEOS Components - CLI
  ******************************************************************************/
 #define OS_USING_CLI
 #ifdef  OS_USING_CLI
@@ -106,7 +106,7 @@
 
 /* Utilities */
 
-/* Single-Thread online packages */
+/* PEOS online packages */
 
 /* IoT - internet of things */
 
@@ -135,5 +135,5 @@
 /* samples: kernel and components samples */
 
 #endif
-/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+/****** (C) COPYRIGHT 2021 PEOS Development Team. *****END OF FILE****/
 

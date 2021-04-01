@@ -1,11 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2019-2020, Single-Thread Development Team
+ * Copyright (c) 2021-2022, PEOS Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Change Logs:
  * Date         Author       Notes
- * 2019-10-30   Wentao SUN   first version
+ * 2021-10-30   Wentao SUN   first version
  *
  ******************************************************************************/
 
@@ -401,4 +401,4 @@ void USART2_IRQHandler( void )
     hal_uart_isr( HAL_UART_PORT_1 );
 }
 #endif //OS_USING_HAL_UART
-/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+/****** (C) COPYRIGHT 2021 PEOS Development Team. *****END OF FILE****/

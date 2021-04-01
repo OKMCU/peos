@@ -1,11 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2019-2020, Single-Thread Development Team
+ * Copyright (c) 2021-2022, PEOS Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Change Logs:
  * Date         Author       Notes
- * 2019-10-28   Wentao SUN   first version
+ * 2021-10-28   Wentao SUN   first version
  *
  ******************************************************************************/
  
@@ -35,5 +35,5 @@ void os_assert_failed(char *file, os_uint32_t line);
 #endif
 
 #endif //__OS_BOARD_H__
-/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+/****** (C) COPYRIGHT 2021 PEOS Development Team. *****END OF FILE****/
 

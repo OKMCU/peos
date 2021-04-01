@@ -1,11 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2019-2020, Single-Thread Development Team
+ * Copyright (c) 2021-2022, PEOS Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date         Author       Notes
- * 2019-10-29   Wentao SUN   first version
+ * 2021-10-29   Wentao SUN   first version
  * 
  ******************************************************************************/
 
@@ -96,5 +96,5 @@ void hal_uart_close( os_uint8_t port );
 #endif
 
 #endif //__HAL_UART_H__
-/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+/****** (C) COPYRIGHT 2021 PEOS Development Team. *****END OF FILE****/
 

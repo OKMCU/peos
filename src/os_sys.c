@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2019-2020, Single-Thread Development Team
+ * Copyright (c) 2021-2022, PEOS Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Change Logs:
  * Date         Author       Notes
- * 2019-10-28   Wentao SUN   first version
- * 2019-10-29   Wentao SUN   double check event flag before entering task
+ * 2021-10-28   Wentao SUN   first version
+ * 2021-10-29   Wentao SUN   double check event flag before entering task
  *
  ******************************************************************************/
 
@@ -75,7 +75,7 @@ int main( void )
             os_task_list[os_task_id].p_task_init( os_task_id );
     }
     
-    /* Start Single-Thread task scheduler */
+    /* Start PEOS task scheduler */
     for(;;)
     {
 #ifdef OS_CLOCK_EN
@@ -135,5 +135,5 @@ int main( void )
 
 /* Private function implementations ------------------------------------------*/
 
-/****** (C) COPYRIGHT 2019 Single-Thread Development Team. *****END OF FILE****/
+/****** (C) COPYRIGHT 2021 PEOS Development Team. *****END OF FILE****/
 
